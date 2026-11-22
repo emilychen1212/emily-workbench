@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>訂單時間軸原型（測試用）</title>
+<meta name="description" content="訂單各階段進度的時間軸原型">
+<style>
+:root{
+  --navy:#3f4f71; --navy-dark:#2e3a54; --navy-light:#4e6190;
+  --moss:#3a7d5c; --danger:#b94a48; --warning:#c47d2a;
+  --barley:#f6f3ea; --surface:#ffffff; --surface2:#f0efe8;
+  --border:#e2ddd0;
+  --text:#1e2029; --text-secondary:#4a4f5c; --text-muted:#8a8f9c;
+  --radius:10px; --shadow:0 2px 10px rgba(63,79,113,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background:var(--barley); color:var(--text); font-size:14px;
+  height:100vh; overflow:hidden; display:flex; flex-direction:column;
+}
+h1,h2,h3{font-family:"Noto Serif TC",serif;}
+
+/* Header */
+.topbar{
+  background:var(--navy); color:#fff; padding:14px 22px;
+  display:flex; align-items:center; gap:18px; flex-shrink:0;
+}
+.topbar h1{font-size:16px; font-weight:700; letter-spacing:.03em; white-space:nowrap;}
+.topbar .sub{font-size:11.5px; color:rgba(255,255,255,.6); white-space:nowrap;}
+
+/* Order chips */
+.order-chips{
+  display:flex; gap:8px; padding:10px 22px; background:var(--surface);
+  border-bottom:1px solid var(--border); overflow-x:auto; flex-shrink:0;
+}
+.order-chip{
+  border:1px solid var(--border); background:var(--surface2); border-radius:20px;
+  padding:6px 14px; font-size:12.5px; cursor:pointer; white-space:nowrap;
+  display:flex; align-items:center; gap:6px; transition:.15s;
+}
+.order-chip:hover{border-color:var(--navy-light);}
+.order-chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+.order-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-done{background:var(--moss);} .dot-active{background:var(--navy-light);}
+.dot-overdue{background:var(--danger);} .dot-pending{background:#c9c4b4;}
+.order-chip.active .dot-active{background:#fff;}
+
+/* Main layout */
+.main{flex:1; display:flex; overflow:hidden;}
+
+/* Left timeline */
+.timeline-panel{
+  width:26%; min-width:230px; max-width:320px; background:var(--surface);
+  border-right:1px solid var(--border); overflow-y:auto; padding:18px 0;
+}
+.order-summary{padding:0 18px 16px; border-bottom:1px solid var(--border); margin-bottom:8px;}
+.order-summary .client{font-size:15px; font-weight:700; color:var(--navy);}
+.order-summary .product{font-size:12.5px; color:var(--text-secondary); margin-top:2px;}
+.order-summary .amount{font-size:13px; color:var(--moss); font-weight:700; margin-top:6px;}
+
+.legend{display:flex; flex-wrap:wrap; gap:8px 12px; padding:0 18px 14px; font-size:10.5px; color:var(--text-muted);}
+.legend span{display:inline-flex; align-items:center; gap:4px;}
+.legend .dot{width:7px;height:7px;border-radius:50%;}
+
+.tl-item{
+  position:relative; padding:12px 18px 12px 40px; cursor:pointer; border-left:2px solid transparent;
+}
+.tl-item:hover{background:var(--surface2);}
+.tl-item.viewing{background:#eef1f6;}
+.tl-node{
+  position:absolute; left:16px; top:14px; width:14px; height:14px; border-radius:50%;
+  border:2.5px solid #c9c4b4; background:#fff; z-index:2;
+}
+.tl-line{
+  position:absolute; left:22px; top:28px; bottom:-12px; width:2px; background:#e2ddd0; z-index:1;
+}
+.tl-item:last-child .tl-line{display:none;}
+.tl-item.done .tl-node{border-color:var(--moss); background:var(--moss);}
+.tl-item.done .tl-line{background:var(--moss);}
+.tl-item.active .tl-node{border-color:var(--navy); background:var(--navy); box-shadow:0 0 0 4px rgba(63,79,113,.15);}
+.tl-item.overdue .tl-node{border-color:var(--danger); background:var(--danger); box-shadow:0 0 0 4px rgba(185,74,72,.18);}
+.tl-item .tl-title{font-size:13px; font-weight:600; color:var(--text);}
+.tl-item.pending .tl-title{color:var(--text-muted); font-weight:500;}
+.tl-item .tl-meta{font-size:11px; color:var(--text-muted); margin-top:2px;}
+.tl-item.overdue .tl-meta{color:var(--danger); font-weight:600;}
+.tl-badge{
+  display:inline-block; font-size:10px; padding:1px 7px; border-radius:10px; margin-top:4px;
+  background:var(--danger); color:#fff; font-weight:600;
+}
+.tl-group-tag{
+  font-size:9.5px; font-weight:600; color:var(--navy-light); background:#3f4f7115;
+  border-radius:8px; padding:1px 6px; vertical-align:middle;
+}
+
+/* Right detail panel */
+.detail-panel{flex:1; overflow-y:auto; padding:26px 32px;}
+.detail-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+.detail-header h2{font-size:19px; color:var(--navy);}
+.stage-status-tag{font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600;}
+.tag-done{background:#3a7d5c22; color:var(--moss);}
+.tag-active{background:#3f4f7122; color:var(--navy);}
+.tag-overdue{background:#b94a4822; color:var(--danger);}
+.tag-pending{background:#8a8f9c22; color:var(--text-muted);}
+
+.not-reached{
+  background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius);
+  padding:40px; text-align:center; color:var(--text-muted); font-size:13px;
+}
+
+.field-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow);
+}
+.field-grid.single{grid-template-columns:1fr;}
+.field{display:flex; flex-direction:column; gap:5px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:12px; color:var(--text-secondary); font-weight:600;}
+.field input, .field select, .field textarea{
+  border:1px solid var(--border); border-radius:6px; padding:7px 10px; font-size:13px;
+  font-family:inherit; background:var(--surface2); color:var(--text);
+}
+.field textarea{resize:vertical; min-height:56px;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--navy-light); background:#fff;}
+.field-hint{font-size:10.5px; color:var(--text-muted);}
+
+.detail-actions{display:flex; gap:10px; margin-top:18px;}
+.btn{
+  border:none; border-radius:7px; padding:8px 16px; font-size:12.5px; font-weight:600; cursor:pointer;
+}
+.btn-primary{background:var(--navy); color:#fff;}
+.btn-primary:hover{background:var(--navy-dark);}
+.btn-ghost{background:var(--surface2); color:var(--text-secondary); border:1px solid var(--border);}
+.btn-ghost:hover{background:#e6e2d5;}
+
+.note-banner{
+  margin-top:14px; font-size:12px; color:var(--text-muted); background:var(--surface2);
+  border-radius:7px; padding:8px 12px;
+}
+
+/* Checklist */
+.checklist-box{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 20px; margin-bottom:14px; box-shadow:var(--shadow);
+}
+.checklist-summary{
+  font-size:12.5px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px;
+}
+.checklist-summary.clear{color:var(--moss);}
+.checklist-summary.pending{color:var(--warning);}
+.checklist-row{
+  display:flex; align-items:center; gap:9px; padding:7px 0; font-size:13px; cursor:pointer;
+  border-bottom:1px solid var(--surface2);
+}
+.checklist-row:last-child{border-bottom:none;}
+.checklist-row input[type="checkbox"]{width:16px; height:16px; accent-color:var(--moss); cursor:pointer;}
+.checklist-row.checked{color:var(--text-muted); text-decoration:line-through; text-decoration-color:#c9c4b4;}
+.checklist-row.checked input{accent-color:var(--moss);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📋 訂單時間軸原型</h1>
+  <div class="sub">MVP測試版 — 左側時間軸 × 右側狀態內容，資料僅存於本次瀏覽記憶體，重新整理會重置</div>
+</div>
+
+<div class="order-chips" id="orderChips"></div>
+
+<div class="main">
+  <div class="timeline-panel" id="timelinePanel"></div>
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<script>
+/* ========== 狀態階段定義 ========== */
+const STAGES = [
+  { key:'base', label:'訂單資料', defaultDays:null, fields:[
+    {id:'client', label:'客戶', type:'text'},
+    {id:'productName', label:'產品名稱', type:'text'},
+    {id:'caseName', label:'採購案名稱', type:'text'},
+    {id:'caseNo', label:'採購案號', type:'text'},
+    {id:'currency', label:'幣別', type:'select', options:['TWD','USD','EUR']},
+    {id:'costOrig', label:'成本（原幣）', type:'number'},
+    {id:'quoteOrig', label:'報價（原幣）', type:'number'},
+    {id:'dealTwd', label:'成交金額（TWD）', type:'number'},
+    {id:'startDate', label:'訂閱起始日', type:'date'},
+    {id:'endDate', label:'訂閱結束日', type:'date'},
+  ]},
+  { key:'inquiry', label:'詢價中', defaultDays:5, fields:[
+    {id:'inquiryDate', label:'寫信日期', type:'date'},
+    {id:'pmReplied', label:'PM是否回覆', type:'select', options:['尚未回覆','已回覆']},
+    {id:'replyQuote', label:'回覆價格', type:'number'},
+    {id:'note', label:'備註', type:'textarea', full:true},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date', hint:'預設更新後2–5天，可自訂覆蓋'},
+  ]},
+  { key:'proposal', label:'已提案／草報價', defaultDays:7, fields:[
+    {id:'proposalDate', label:'寄出報價日期', type:'date'},
+    {id:'clientReplied', label:'客戶是否回覆', type:'select', options:['尚未回覆','已回覆']},
+    {id:'nextFollowUpDate', label:'下次追蹤時間點', type:'date', hint:'例如：明年才起訂，可直接設到議價前'},
+    {id:'note', label:'備註', type:'textarea', full:true},
+  ]},
+  { key:'bargain', label:'採購議價', defaultDays:3, fields:[
+    {id:'tenderDocReceived', label:'是否收到標案文件', type:'select', options:['未收到','已收到']},
+    {id:'tenderDocDate', label:'收到時間', type:'date'},
+    {id:'progress', label:'製作進度', type:'text'},
+    {id:'needPerformanceBond', label:'是否需申請履保金', type:'select', options:['否','是']},
+    {id:'needBidBond', label:'是否需申請押標金', type:'select', options:['否','是']},
+    {id:'bidTime', label:'投標時間', type:'datetime-local'},
+    {id:'openTime', label:'開標時間', type:'datetime-local'},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date'},
+  ]},
+  { key:'contract', label:'契約書簽訂中', defaultDays:7, fields:[
+    {id:'contractReceived', label:'收到合約', type:'select', options:['未收到','已收到'], checklist:true},
+    {id:'reviewFormDone', label:'公司合約審閱表已填', type:'select', options:['未填','已填'], checklist:true},
+    {id:'contractSent', label:'合約已寄出', type:'select', options:['未寄出','已寄出'], checklist:true},
+    {id:'clientReceived', label:'客戶已收到', type:'select', options:['未收到','已收到'], checklist:true},
+    {id:'signedReturned', label:'用印後已寄回', type:'select', options:['未寄回','已寄回'], checklist:true},
+    {id:'needStampTax', label:'是否需申請印花稅', type:'select', options:['否','是']},
+    {id:'stampTaxAmount', label:'印花稅金額', type:'number'},
+    {id:'note', label:'備註', type:'textarea', full:true},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date'},
+  ]},
+  { key:'shipping', label:'出貨中', defaultDays:3, fields:[
+    {id:'shipConfirmWritten', label:'出貨確認單已完成', type:'select', options:['未寫','已寫'], checklist:true},
+    {id:'progress', label:'進度', type:'text'},
+    {id:'blocker', label:'卡住的點', type:'textarea', full:true},
+    {id:'deliveryDate', label:'約定交貨時間（交貨型客戶）', type:'date'},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date'},
+  ]},
+  { key:'acceptance', label:'驗收中', defaultDays:14, fields:[
+    {id:'needAcceptance', label:'是否需要驗收', type:'select', options:['否','是']},
+    {id:'acceptanceDate', label:'客戶驗收日期', type:'date'},
+    {id:'willAttend', label:'我是否需參加', type:'select', options:['否','是']},
+    {id:'acceptanceDone', label:'驗收已完成', type:'select', options:['未完成','已完成'], checklist:true},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date'},
+  ]},
+  { key:'invoice', label:'可開發票', defaultDays:1, fields:[
+    {id:'clientInvoiceDate', label:'客戶預計開票時間', type:'date'},
+    {id:'invoiceTemplateSent', label:'開票申請信', type:'select', options:['未寄送','已寄送']},
+    {id:'adminProgress', label:'行政（Sylvia）開票進度', type:'select', options:['未申請','已申請','已開立']},
+    {id:'nextFollowUpDate', label:'下次追蹤日', type:'date'},
+  ]},
+  { key:'service', label:'履約期間', defaultDays:null, fields:[
+    {id:'serviceIssues', label:'客服問題紀錄', type:'textarea', full:true},
+    {id:'maintenanceReportDate', label:'維護報告下次寄送提醒', type:'date'},
+    {id:'note', label:'備註', type:'textarea', full:true},
+  ]},
+  { key:'closed', label:'履約結束', defaultDays:10, fields:[
+    {id:'bondRefundDate', label:'預計退履保金日期', type:'date'},
+    {id:'note', label:'備註', type:'textarea', full:true},
+  ]},
+];
+
+/* ========== 階段分組（Phase）==========
+   大部分階段仍是線性一關接一關；但契約書簽訂中／出貨中／驗收中
+   這三個實務上沒有固定先後順序，所以歸為同一組，進到這一組後三個
+   狀態會「同時開放編輯」，不用彼此完成才能碰下一個。 */
+const PHASES = [
+  [0], [1], [2], [3],
+  [4, 5, 6],   // 契約書簽訂中／出貨中／驗收中：同組，可平行編輯
+  [7], [8], [9],
+];
+function phaseIndexOfStage(stageIdx){ return PHASES.findIndex(p => p.includes(stageIdx)); }
+function phaseLabel(phaseIdx){
+  return PHASES[phaseIdx].map(i => STAGES[i].label).join('／');
+}
+const todayISO = () => new Date().toISOString().slice(0,10);
+function addDays(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+
+/* ========== 測試訂單資料 ========== */
+const ORDERS = [
+  {
+    id:'o1', client:'示範醫學大學A', product:'Research Eyes 升級案', currentPhase:2,
+    enteredAt:{0:addDays(-40),1:addDays(-30),2:addDays(-20)},
+    stageData:{
+      0:{client:'示範醫學大學A',productName:'Research Eyes 升級版',caseName:'2027年度資料庫採購',caseNo:'DEMO-01',currency:'TWD',costOrig:1000,quoteOrig:1200,dealTwd:'',startDate:'2027-01-01',endDate:'2027-12-31'},
+      1:{inquiryDate:addDays(-32),pmReplied:'已回覆',replyQuote:1000,note:'PM回覆成本價，已確認可報價。',nextFollowUpDate:addDays(-30)},
+      2:{proposalDate:addDays(-20),clientReplied:'尚未回覆',nextFollowUpDate:addDays(35),note:'明年1月才起訂，客戶說10月會再進行議價，先不用頻繁追蹤，10月初再主動聯繫。'},
+    }
+  },
+  {
+    id:'o2', client:'示範醫院圖書館B', product:'UpToDate 續約', currentPhase:4,
+    enteredAt:{0:addDays(-60),1:addDays(-55),2:addDays(-45),3:addDays(-30),4:addDays(-22)},
+    stageData:{
+      0:{client:'示範醫院圖書館B',productName:'UpToDate',caseName:'2026續約案',caseNo:'DEMO-02',currency:'USD',costOrig:1000,quoteOrig:1200,dealTwd:36000,startDate:'2026-09-01',endDate:'2027-08-31'},
+      1:{inquiryDate:addDays(-55),pmReplied:'已回覆',replyQuote:1000,note:'',nextFollowUpDate:addDays(-50)},
+      2:{proposalDate:addDays(-45),clientReplied:'已回覆',nextFollowUpDate:addDays(-38),note:''},
+      3:{tenderDocReceived:'已收到',tenderDocDate:addDays(-30),progress:'已完成投標文件','needPerformanceBond':'是','needBidBond':'否',bidTime:'','openTime':'',nextFollowUpDate:addDays(-24)},
+      4:{contractReceived:'已收到',reviewFormDone:'已填',contractSent:'已寄出',clientReceived:'已收到',signedReturned:'未寄回',needStampTax:'是',stampTaxAmount:100,note:'卡在客戶內部用印流程，圖書館說採購室在跑簽核，尚無明確時間。',nextFollowUpDate:''},
+    }
+  },
+  {
+    id:'o3', client:'示範護理專科學校C', product:'JoVE 試用轉正式', currentPhase:1,
+    enteredAt:{0:addDays(-3),1:addDays(-1)},
+    stageData:{
+      0:{client:'示範護理專科學校C',productName:'JoVE',caseName:'',caseNo:'',currency:'USD',costOrig:1000,quoteOrig:1200,dealTwd:'',startDate:'',endDate:''},
+      1:{inquiryDate:addDays(-1),pmReplied:'尚未回覆',replyQuote:'',note:'剛寄信給JoVE PM詢問校園版報價。',nextFollowUpDate:addDays(4)},
+    }
+  },
+  {
+    id:'o4', client:'示範醫學大學D', product:'VisualDx 驗收', currentPhase:4,
+    enteredAt:{0:addDays(-90),1:addDays(-85),2:addDays(-75),3:addDays(-60),4:addDays(-45),5:addDays(-30),6:addDays(-25)},
+    stageData:{
+      0:{client:'示範醫學大學D',productName:'VisualDx',caseName:'2026新購案',caseNo:'DEMO-04',currency:'USD',costOrig:1000,quoteOrig:1200,dealTwd:36000,startDate:'2026-07-01',endDate:'2027-06-30'},
+      1:{inquiryDate:addDays(-85),pmReplied:'已回覆',replyQuote:1000,note:'',nextFollowUpDate:addDays(-80)},
+      2:{proposalDate:addDays(-75),clientReplied:'已回覆',nextFollowUpDate:addDays(-68),note:''},
+      3:{tenderDocReceived:'已收到',tenderDocDate:addDays(-60),progress:'完成',needPerformanceBond:'否',needBidBond:'否',bidTime:'',openTime:'',nextFollowUpDate:addDays(-55)},
+      4:{contractReceived:'已收到',reviewFormDone:'已填',contractSent:'已寄出',clientReceived:'已收到',signedReturned:'已寄回',needStampTax:'否',stampTaxAmount:'',note:'',nextFollowUpDate:addDays(-40)},
+      5:{shipConfirmWritten:'已寫',progress:'開通完成',blocker:'',deliveryDate:addDays(-28),nextFollowUpDate:addDays(-26)},
+      6:{needAcceptance:'是',acceptanceDate:'',willAttend:'是',acceptanceDone:'未完成',nextFollowUpDate:''},
+    }
+  },
+  {
+    id:'o5', client:'示範大學E', product:'MedOne 履約中', currentPhase:6,
+    enteredAt:{0:addDays(-200),1:addDays(-195),2:addDays(-185),3:addDays(-170),4:addDays(-155),5:addDays(-140),6:addDays(-130),7:addDays(-125),8:addDays(-120)},
+    stageData:{
+      0:{client:'示範大學E',productName:'MedOne',caseName:'2026年度案',caseNo:'DEMO-05',currency:'TWD',costOrig:1000,quoteOrig:1200,dealTwd:36000,startDate:'2026-05-01',endDate:'2027-04-30'},
+      8:{serviceIssues:'尚無客訴，使用率穩定。',maintenanceReportDate:addDays(20),note:'Q3使用率報告預計9月中提供給圖書館。'},
+    }
+  },
+  {
+    id:'o6', client:'示範醫院F', product:'Sanford Guide 新購', currentPhase:3,
+    enteredAt:{0:addDays(-15),1:addDays(-12),2:addDays(-8),3:addDays(-2)},
+    stageData:{
+      0:{client:'示範醫院F',productName:'Sanford Guide',caseName:'2026新購案',caseNo:'DEMO-06',currency:'USD',costOrig:1000,quoteOrig:1200,dealTwd:'',startDate:'',endDate:''},
+      1:{inquiryDate:addDays(-12),pmReplied:'已回覆',replyQuote:1000,note:'',nextFollowUpDate:addDays(-10)},
+      2:{proposalDate:addDays(-8),clientReplied:'已回覆',nextFollowUpDate:addDays(-4),note:''},
+      3:{tenderDocReceived:'已收到',tenderDocDate:addDays(-2),progress:'製作中',needPerformanceBond:'否',needBidBond:'否',bidTime:addDays(3)+'T10:00',openTime:addDays(3)+'T14:00',nextFollowUpDate:addDays(2)},
+    }
+  },
+];
+
+/* ========== 狀態邏輯 ========== */
+function getStageData(order, idx){ return order.stageData[idx] || {}; }
+
+function isOverdue(order, idx){
+  const stage = STAGES[idx];
+  if (stage.defaultDays === null) return false;
+  const data = getStageData(order, idx);
+  const checklistFields = stage.fields.filter(f => f.checklist);
+  if (checklistFields.length && checklistFields.every(f => data[f.id] === f.options[1])){
+    return false; // 這個狀態份內該確認的事項都完成了，不用紅
+  }
+  const today = new Date(todayISO());
+  if (data.nextFollowUpDate){
+    return today >= new Date(data.nextFollowUpDate);
+  }
+  const entered = order.enteredAt[idx];
+  if (!entered) return false;
+  const days = (today - new Date(entered)) / 86400000;
+  return days >= stage.defaultDays;
+}
+
+function stageStatus(order, idx){
+  const stagePhase = phaseIndexOfStage(idx);
+  if (stagePhase < order.currentPhase) return 'done';
+  if (stagePhase > order.currentPhase) return 'pending';
+  // 同一個 phase：不管群組內有幾個狀態，各自依自己的資料判斷，互不牽制
+  return isOverdue(order, idx) ? 'overdue' : 'active';
+}
+
+function orderOverallStatus(order){
+  const stages = PHASES[order.currentPhase];
+  return stages.some(idx => isOverdue(order, idx)) ? 'overdue' : 'active';
+}
+
+/* ========== 全域狀態 ========== */
+let activeOrderId = ORDERS[0].id;
+let viewStageIndex = PHASES[ORDERS[0].currentPhase][0];
+
+function getOrder(id){ return ORDERS.find(o => o.id === id); }
+
+/* ========== 渲染：訂單切換列 ========== */
+function renderChips(){
+  const wrap = document.getElementById('orderChips');
+  wrap.innerHTML = ORDERS.map(o => {
+    const st = orderOverallStatus(o);
+    const dotClass = st === 'overdue' ? 'dot-overdue' : 'dot-active';
+    return `<div class="order-chip ${o.id===activeOrderId?'active':''}" data-order="${o.id}">
+      <span class="dot ${dotClass}"></span>${o.client}｜${o.product}
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('.order-chip').forEach(el => {
+    el.addEventListener('click', () => {
+      activeOrderId = el.dataset.order;
+      const o = getOrder(activeOrderId);
+      viewStageIndex = PHASES[o.currentPhase][0];
+      renderAll();
+    });
+  });
+}
+
+/* ========== 渲染：左側時間軸 ========== */
+function renderTimeline(){
+  const order = getOrder(activeOrderId);
+  const panel = document.getElementById('timelinePanel');
+  const base = getStageData(order, 0);
+  panel.innerHTML = `
+    <div class="order-summary">
+      <div class="client">${order.client}</div>
+      <div class="product">${order.product}</div>
+      <div class="amount">${base.dealTwd ? 'NT$ '+Number(base.dealTwd).toLocaleString('zh-TW') : (base.quoteOrig ? '報價 '+base.currency+' '+Number(base.quoteOrig).toLocaleString('zh-TW') : '—')}</div>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#c9c4b4"></span>尚未開始</span>
+      <span><span class="dot" style="background:var(--navy)"></span>進行中</span>
+      <span><span class="dot" style="background:var(--moss)"></span>已完成</span>
+      <span><span class="dot" style="background:var(--danger)"></span>逾期未追蹤</span>
+    </div>
+    ${STAGES.map((s, i) => {
+      const st = stageStatus(order, i);
+      const data = getStageData(order, i);
+      const checklistFields = s.fields.filter(f => f.checklist);
+      const isGrouped = PHASES[phaseIndexOfStage(i)].length > 1;
+      let meta = '';
+      if (st === 'active' || st === 'overdue'){
+        if (checklistFields.length){
+          const unconfirmed = checklistFields.filter(f => data[f.id] !== f.options[1]).length;
+          meta = unconfirmed === 0 ? '事項已確認' : `${unconfirmed}項待確認`;
+        } else if (data.nextFollowUpDate){
+          meta = `下次追蹤：${data.nextFollowUpDate}`;
+        } else {
+          meta = '進行中';
+        }
+      } else if (st === 'done'){
+        meta = '已完成';
+      }
+      return `<div class="tl-item ${st} ${i===viewStageIndex?'viewing':''} ${isGrouped?'grouped':''}" data-idx="${i}">
+        <div class="tl-line"></div>
+        <div class="tl-node"></div>
+        <div class="tl-title">${i}. ${s.label}${isGrouped?' <span class="tl-group-tag">可平行</span>':''}</div>
+        <div class="tl-meta">${meta}</div>
+        ${st==='overdue' ? '<div class="tl-badge">逾期</div>' : ''}
+      </div>`;
+    }).join('')}
+  `;
+  panel.querySelectorAll('.tl-item').forEach(el => {
+    el.addEventListener('click', () => {
+      viewStageIndex = parseInt(el.dataset.idx);
+      renderAll();
+    });
+  });
+}
+
+/* ========== 渲染：右側詳情 ========== */
+function fieldInput(field, value){
+  value = value ?? '';
+  if (field.type === 'select'){
+    return `<select data-field="${field.id}">${field.options.map(o => `<option ${o===value?'selected':''}>${o}</option>`).join('')}</select>`;
+  }
+  if (field.type === 'textarea'){
+    return `<textarea data-field="${field.id}">${value}</textarea>`;
+  }
+  return `<input type="${field.type}" data-field="${field.id}" value="${value}" />`;
+}
+
+function checklistRow(field, value){
+  const checked = value === field.options[1];
+  return `<label class="checklist-row ${checked?'checked':''}">
+    <input type="checkbox" data-checklist="${field.id}" data-on="${field.options[1]}" data-off="${field.options[0]}" ${checked?'checked':''}/>
+    ${field.label}
+  </label>`;
+}
+
+function renderDetail(){
+  const order = getOrder(activeOrderId);
+  const stage = STAGES[viewStageIndex];
+  const st = stageStatus(order, viewStageIndex);
+  const panel = document.getElementById('detailPanel');
+
+  const tagClass = st === 'done' ? 'tag-done' : st === 'overdue' ? 'tag-overdue' : st === 'active' ? 'tag-active' : 'tag-pending';
+  const tagText = st === 'done' ? '已完成' : st === 'overdue' ? '逾期未追蹤' : st === 'active' ? '目前進度' : '尚未進入';
+
+  const checklistFields = stage.fields.filter(f => f.checklist);
+  const normalFields = stage.fields.filter(f => !f.checklist);
+
+  const stagePhase = phaseIndexOfStage(viewStageIndex);
+  const isGrouped = PHASES[stagePhase].length > 1;
+  const hasNextPhase = stagePhase < PHASES.length - 1;
+
+  let bodyHtml;
+  if (st === 'pending'){
+    bodyHtml = `<div class="not-reached">此訂單尚未進入「${stage.label}」階段，目前還在「${phaseLabel(order.currentPhase)}」。<br>此階段的內容會在訂單實際走到這裡後才會開放填寫。</div>`;
+  } else {
+    const data = getStageData(order, viewStageIndex);
+
+    let checklistHtml = '';
+    if (checklistFields.length){
+      const unconfirmed = checklistFields.filter(f => data[f.id] !== f.options[1]);
+      checklistHtml = `<div class="checklist-box">
+        <div class="checklist-summary ${unconfirmed.length===0?'clear':'pending'}">
+          ${unconfirmed.length===0 ? '✓ 本狀態事項皆已確認' : `尚有 ${unconfirmed.length} 項未確認：${unconfirmed.map(f=>f.label).join('、')}`}
+        </div>
+        ${checklistFields.map(f => checklistRow(f, data[f.id])).join('')}
+      </div>`;
+    }
+
+    bodyHtml = `${isGrouped ? `<div class="note-banner">「${phaseLabel(stagePhase)}」這三個狀態沒有固定先後順序，可以同時編輯、各自追蹤進度，不需要等其中一個完成才能碰下一個。</div>` : ''}
+    ${checklistHtml}
+    <div class="field-grid">
+      ${normalFields.map(f => `<div class="field ${f.full?'full':''}">
+        <label>${f.label}</label>
+        ${fieldInput(f, data[f.id])}
+        ${f.hint ? `<span class="field-hint">${f.hint}</span>` : ''}
+      </div>`).join('')}
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary" id="saveBtn">儲存</button>
+      ${hasNextPhase ? `<button class="btn btn-ghost" id="nextPhaseBtn">整批前進到「${phaseLabel(stagePhase+1)}」→</button>` : ''}
+    </div>`;
+  }
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <h2>${stage.label}</h2>
+      <span class="stage-status-tag ${tagClass}">${tagText}</span>
+    </div>
+    ${bodyHtml}
+  `;
+
+  panel.querySelectorAll('.checklist-row input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const row = cb.closest('.checklist-row');
+      row.classList.toggle('checked', cb.checked);
+    });
+  });
+
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn){
+    saveBtn.addEventListener('click', () => {
+      const data = order.stageData[viewStageIndex] || {};
+      panel.querySelectorAll('[data-field]').forEach(el => {
+        data[el.dataset.field] = el.value;
+      });
+      panel.querySelectorAll('[data-checklist]').forEach(el => {
+        data[el.dataset.checklist] = el.checked ? el.dataset.on : el.dataset.off;
+      });
+      order.stageData[viewStageIndex] = data;
+      renderAll();
+    });
+  }
+  const nextPhaseBtn = document.getElementById('nextPhaseBtn');
+  if (nextPhaseBtn){
+    nextPhaseBtn.addEventListener('click', () => {
+      // 先儲存目前正在看的這個狀態，再把整個 phase（可能是單一狀態，也可能是契約/出貨/驗收這種群組）往前推進
+      const data = order.stageData[viewStageIndex] || {};
+      panel.querySelectorAll('[data-field]').forEach(el => { data[el.dataset.field] = el.value; });
+      panel.querySelectorAll('[data-checklist]').forEach(el => { data[el.dataset.checklist] = el.checked ? el.dataset.on : el.dataset.off; });
+      order.stageData[viewStageIndex] = data;
+
+      const nextPhase = phaseIndexOfStage(viewStageIndex) + 1;
+      order.currentPhase = nextPhase;
+      PHASES[nextPhase].forEach(sIdx => {
+        if (!order.enteredAt[sIdx]) order.enteredAt[sIdx] = todayISO();
+        order.stageData[sIdx] = order.stageData[sIdx] || {};
+      });
+      viewStageIndex = PHASES[nextPhase][0];
+      renderAll();
+    });
+  }
+}
+
+function renderAll(){
+  renderChips();
+  renderTimeline();
+  renderDetail();
+}
+
+renderAll();
+</script>
+</body>
+</html>
