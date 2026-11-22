@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>臺大兒醫平台合作 — 對齊思考脈絡</title>
+<meta name="description" content="兒醫平台合作的對齊脈絡圖">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+  :root{
+    --navy:#1F2E45;
+    --navy-soft:#33465F;
+    --moss:#7A8B5C;
+    --moss-deep:#57633F;
+    --barley:#F3ECDD;
+    --barley-card:#FBF8F1;
+    --line:#C9BFA5;
+    --amber:#B8823D;
+    --ink:#2B2620;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--barley);
+    color:var(--ink);
+    font-family:'Noto Sans TC', sans-serif;
+    padding:48px 24px 80px;
+  }
+
+  .wrap{max-width:980px;margin:0 auto;}
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.28em;
+    color:var(--moss-deep);
+    font-weight:700;
+    text-align:center;
+    margin-bottom:10px;
+  }
+
+  h1{
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    font-size:26px;
+    text-align:center;
+    color:var(--navy);
+    margin:0 0 6px;
+    letter-spacing:0.02em;
+  }
+
+  .subtitle{
+    text-align:center;
+    font-size:13.5px;
+    color:var(--navy-soft);
+    margin-bottom:40px;
+    line-height:1.7;
+  }
+
+  /* ROOT */
+  .root{
+    background:var(--navy);
+    color:var(--barley-card);
+    border-radius:10px;
+    padding:18px 24px;
+    max-width:560px;
+    margin:0 auto;
+    text-align:center;
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    font-size:16.5px;
+    letter-spacing:0.02em;
+    box-shadow:0 4px 14px rgba(31,46,69,0.18);
+  }
+  .root span{
+    display:block;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:400;
+    font-size:12px;
+    color:#C7CFDB;
+    margin-top:5px;
+    letter-spacing:0.03em;
+  }
+
+  /* trunk line down from root */
+  .trunk{
+    width:2px;
+    height:28px;
+    background:var(--line);
+    margin:0 auto;
+  }
+
+  /* horizontal branch bar */
+  .branch-bar{
+    position:relative;
+    height:2px;
+    background:var(--line);
+    margin:0 auto 0;
+  }
+
+  .branches{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+    position:relative;
+    padding-top:0;
+  }
+
+  .insight{
+    border-left-color:var(--navy-soft);
+    background:#EFEAE0;
+    color:#3A3428;
+  }
+  .insight::before{
+    content:"背景 · ";
+    color:var(--navy-soft);
+    font-weight:700;
+  }
+
+  .stem{
+    width:2px;
+    height:22px;
+    background:var(--line);
+    margin:0 auto;
+  }
+
+  .branch{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .node{
+    border-radius:9px;
+    padding:14px 14px 12px;
+    font-family:'Noto Serif TC', serif;
+    background:var(--navy-soft);
+    color:#F2EFE6;
+    text-align:center;
+    position:relative;
+  }
+  .node .num{
+    display:inline-block;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    color:#D8CFAE;
+    margin-bottom:5px;
+  }
+  .node .title{
+    font-size:14px;
+    font-weight:700;
+    line-height:1.5;
+  }
+  .node.sensitive{
+    background:var(--amber);
+  }
+  .node.sensitive .num{color:#3A2A10;}
+  .node .tag{
+    margin-top:7px;
+    display:inline-block;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:10px;
+    font-weight:500;
+    background:rgba(255,255,255,0.14);
+    padding:2px 8px;
+    border-radius:99px;
+    letter-spacing:0.04em;
+  }
+
+  .leaves{
+    margin-top:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .leaf-stem{
+    width:2px;
+    height:14px;
+    background:var(--line);
+  }
+
+  .leaf{
+    width:100%;
+    background:var(--barley-card);
+    border:1px solid var(--line);
+    border-left:3px solid var(--moss);
+    border-radius:6px;
+    padding:9px 10px;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink);
+    margin-bottom:9px;
+    text-align:left;
+  }
+  .leaf b{
+    color:var(--navy);
+    font-weight:700;
+  }
+  .leaf.q::before{
+    content:"Q · ";
+    color:var(--moss-deep);
+    font-weight:700;
+    font-family:'Noto Serif TC',serif;
+  }
+  .leaf.note{
+    border-left-color:var(--amber);
+    background:#FBF3E4;
+    font-style:normal;
+    color:#5C4520;
+  }
+  .leaf.note::before{
+    content:"提醒 · ";
+    color:var(--amber);
+    font-weight:700;
+  }
+
+  .footer-note{
+    max-width:640px;
+    margin:44px auto 0;
+    background:var(--barley-card);
+    border:1px dashed var(--line);
+    border-radius:8px;
+    padding:14px 18px;
+    font-size:12.5px;
+    line-height:1.8;
+    color:var(--navy-soft);
+    text-align:center;
+  }
+  .footer-note b{color:var(--navy);}
+
+  @media (max-width:900px){
+    .branches{grid-template-columns:1fr;gap:26px;}
+    .stem{height:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">CHILD ABUSE &amp; NEGLECT eLEARNING COLLECTION</div>
+  <h1>臺大兒醫智慧醫療培訓平台 · 對齊思考脈絡</h1>
+  <div class="subtitle">已知平台為<b style="color:var(--navy)">委外建置</b>，多了「廠商」這個變數 —— 對齊順序調整為：先定錨時程與規劃現況，摸清廠商對接狀況，再依序帶入授權四題、出版社關切（優先性提高）、主管交辦事項</div>
+
+  <div class="root">
+    今天與郁翎對齊的核心目標
+    <span>摸清平台規劃掌握度，為後續合作與授權談判鋪路</span>
+  </div>
+  <div class="trunk"></div>
+  <div class="branch-bar"></div>
+
+  <div class="branches">
+
+    <!-- ① 定錨 -->
+    <div class="branch">
+      <div class="stem"></div>
+      <div class="node">
+        <span class="num">① 定錨</span>
+        <div class="title">時程與規劃現況</div>
+      </div>
+      <div class="leaf-stem"></div>
+      <div class="leaves">
+        <div class="leaf insight">已從標案資訊查得平台<b>為委外建置</b>，無需再問「自建或委外」</div>
+        <div class="leaf q"><b>決標日期</b>是否已確定？可搭配標案資訊核對「決標後80天完成」的時程</div>
+        <div class="leaf note">委外案工期通常已綁定合約80天，授權談判與內容準備的時間壓力比自建更緊，向主管報備時建議加一句提醒</div>
+      </div>
+    </div>
+
+    <!-- ② 摸底 -->
+    <div class="branch">
+      <div class="stem"></div>
+      <div class="node">
+        <span class="num">② 摸底</span>
+        <div class="title">規劃掌握度 ＋ 廠商對接</div>
+      </div>
+      <div class="leaf-stem"></div>
+      <div class="leaves">
+        <div class="leaf q">目前對平台規劃內容了解到什麼程度？是否有需求書／簡報可參考？</div>
+        <div class="leaf q">合作構想是<b>院方主動提出</b>，還是<b>圖書館端提議</b>？（判斷真正決策者是誰）</div>
+        <div class="leaf q"><b>得標廠商</b>是否已知／是哪一家？圖書館端與廠商目前有無對接窗口？</div>
+        <div class="leaf note">委外代表技術溝通對象可能是廠商而非院內IT，這會影響誰是真正的技術決策者</div>
+      </div>
+    </div>
+
+    <!-- ③ PM四題 -->
+    <div class="branch">
+      <div class="stem"></div>
+      <div class="node">
+        <span class="num">③ PM交辦</span>
+        <div class="title">授權相關四題</div>
+        <span class="tag">可直接照順序帶</span>
+      </div>
+      <div class="leaf-stem"></div>
+      <div class="leaves">
+        <div class="leaf q">整合<b>內容範圍</b>：整套Collection或特定主題模組？</div>
+        <div class="leaf insight">Collection由多個獨立模組組成（如Physical Abuse、Sex Trafficking、Strangulation等），非全包全無，建議先請館員排優先模組</div>
+        <div class="leaf q"><b>使用方式</b>：API串接嵌入，或教材連結／單點登入？</div>
+        <div class="leaf q">若走API串接，<b>由廠商執行還是院方／圖書館主導</b>？（關係到後續對接窗口與時程掌控權）</div>
+        <div class="leaf q"><b>使用對象</b>：僅新進醫事人員，還是擴及全院？規模約多少人？</div>
+        <div class="leaf q">內容是否<b>對外公開</b>？有無使用者權限控管機制？</div>
+        <div class="leaf insight">多個模組含大量臨床案例與影像（部分模組逾700案例／1500張圖片），影像授權與使用權限需一併留意</div>
+      </div>
+    </div>
+
+    <!-- ④ 出版社 -->
+    <div class="branch">
+      <div class="stem"></div>
+      <div class="node sensitive">
+        <span class="num">④ 出版社窗口</span>
+        <div class="title">平台建置技術細節</div>
+        <span class="tag">重要性提高·不必等後段</span>
+      </div>
+      <div class="leaf-stem"></div>
+      <div class="leaves">
+        <div class="leaf q">平台技術架構大致為何？是否為本地端AI系統？有無開放API介接規劃？</div>
+        <div class="leaf note">已知答案（本地端AI系統），此處是「順著確認細節」而非重問，目的是讓出版社評估是否投入資源，非審查語氣</div>
+        <div class="leaf note">因是委外系統，出版社更需要<b>廠商平台的介接規格</b>而非院內系統資訊，優先性高於自建情境</div>
+        <div class="leaf q">模組的CE學分認證／完課追蹤機制，能否搬遷至平台端？（館員可能尚未想到，值得主動提出）</div>
+      </div>
+    </div>
+
+    <!-- ⑤ 主管交辦 -->
+    <div class="branch">
+      <div class="stem"></div>
+      <div class="node sensitive">
+        <span class="num">⑤ 主管交辦</span>
+        <div class="title">預算 ／ 深耕計畫延伸機會</div>
+        <span class="tag">敏感·語氣需委婉</span>
+      </div>
+      <div class="leaf-stem"></div>
+      <div class="leaves">
+        <div class="leaf q">避免直問預算，改問：「若要推進，貴院是走專案採購，還是既有訂購額度內調整？」</div>
+        <div class="leaf q">深耕計畫延伸：「除了這個平台，計畫底下圖書館還有沒有其他數位資源建置規劃？」</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    <b>對話節奏建議：</b>①②建立起「我方有誠意且掌握脈絡」的基礎後，再進入③的具體授權提問；④因委外而重要性提高，可視對話流暢度提前帶入；⑤仍留到對話後段，語氣委婉、順勢帶出較自然。
+  </div>
+
+</div>
+</body>
+</html>
