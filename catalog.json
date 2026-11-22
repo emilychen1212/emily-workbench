@@ -221,6 +221,19 @@
       ],
       "date": "2026-10",
       "url": "https://github.com/emilychen1212/usage-stats-tool"
+    },
+    {
+      "id": "taebdc-sop",
+      "title": "電子書聯盟作業時間軸 SOP",
+      "desc": "TAEBDC 一年的作業流程與注意事項",
+      "type": "guides",
+      "tags": [
+        "TAEBDC",
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "guides/2026-11-taebdc-sop/"
     }
   ]
 }

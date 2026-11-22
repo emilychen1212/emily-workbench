@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>電子書聯盟（TAEBDC）作業時間軸 SOP</title>
+<meta name="description" content="臺灣學術電子書聯盟一年的廠商作業時間軸：提報、試用、評選、報價、招標、交貨驗收到退保固金。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Figtree:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0d1626);--soft:light-dark(#eef3f9,#15223a);--ink:light-dark(#16263d,#e7eef8);--mute:light-dark(#5b6b80,#9fb0c6);
+--navy:light-dark(#1f3b63,#8fb4e8);--navyfill:#1f3b63;--orange:#f28c28;--line:light-dark(#d5deea,#26365240);
+--a:#f28c28;--b:#3a78c9;--c:#2fa38a;--d:#c95b8f;--e:#7c5cc9;--f:#e2a400;--g:#5b6b80;--card:light-dark(#ffffff,#121e33)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1180px;margin:0 auto}
+header.band{background:var(--navyfill);color:#fff}
+h1{font-size:clamp(30px,4.4vw,46px);line-height:1.1;margin:0 0 10px;font-weight:900;text-wrap:balance}
+.lead{max-width:62ch;color:#d6e2f2;margin:0 0 26px}
+.map{background:#fff1;border-radius:18px;padding:18px clamp(12px,2vw,22px) 14px}
+.months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));font:600 13px Figtree,sans-serif;color:#b9cbe3;margin-left:var(--lab)}
+.months span{border-left:1px dashed #ffffff30;padding-left:4px;white-space:nowrap}.months i{font-style:normal}
+.lane{display:flex;align-items:center;gap:10px;margin-top:10px}
+.lane b{width:var(--lab);flex:none;font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.track{position:relative;flex:1;height:34px;background:#ffffff14;border-radius:17px}
+.bar{position:absolute;top:4px;height:26px;border-radius:13px;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;padding:0 9px;white-space:nowrap;overflow:hidden;cursor:pointer;border:0;font-family:inherit}
+.bar:focus-visible{outline:3px solid #fff}
+.note{margin:12px 0 0;font-size:13px;color:#ffd7ae}
+.map{--lab:92px}
+nav.band{padding-block:14px;position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips small{color:var(--mute);margin-right:4px}
+.chip{min-height:40px;padding:0 14px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:500 14px inherit;font-family:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--navy);border-color:var(--navy);color:var(--bg)}
+.chip:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.phase{margin:34px 0 0;scroll-margin-top:84px}
+.phase h2{display:flex;align-items:center;gap:12px;font-size:clamp(22px,2.6vw,28px);line-height:1.2;margin:0 0 4px}
+.dot{width:22px;height:22px;border-radius:50%;flex:none;border:5px solid var(--card);box-shadow:0 0 0 3px var(--pc)}
+.phase>p{margin:0 0 14px 34px;color:var(--mute)}
+.stops{list-style:none;margin:0;padding:0 0 0 10px;border-left:4px solid var(--pc);margin-left:9px}
+.stop{position:relative;display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 18px;padding:14px 0 14px 22px}
+.stop::before{content:"";position:absolute;left:-12px;top:22px;width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--pc)}
+.when{font:800 17px/1.3 Figtree,"Noto Sans TC",sans-serif;color:var(--pc);padding-top:2px}
+.what h3{margin:0;font-size:17px;line-height:1.45}
+.tags{display:inline-flex;gap:6px;margin-left:6px;vertical-align:2px}
+.tag{font-size:12px;font-weight:700;padding:1px 8px;border-radius:10px;background:var(--soft);color:var(--navy);white-space:nowrap}
+.tag.out{background:#3a78c922;color:#3a78c9}.tag.in{background:#f28c2826;color:#c2650c}.tag.pub{background:#2fa38a22;color:#1e8a72}
+.what ul{margin:6px 0 0;padding-left:1.1em;color:var(--mute);font-size:15px}
+.tip{margin-top:8px;background:#f28c281c;border-left:4px solid var(--orange);border-radius:0 10px 10px 0;padding:7px 12px;font-size:14.5px}
+.tip b{color:#c2650c}
+.stop.hide{display:none}
+.lessons{background:var(--soft)}
+.lessons h2{margin:0 0 14px;font-size:clamp(22px,2.6vw,28px)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.card{background:var(--card);border-radius:16px;padding:16px 18px;border:1px solid var(--line)}
+.card h3{margin:0 0 6px;font-size:16.5px}
+.card p{margin:0;color:var(--mute);font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:15px;background:var(--card);border-radius:14px;overflow:hidden}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--navyfill);color:#fff;font-weight:700}
+footer{font-size:13px;color:var(--mute)}
+@media(max-width:700px){.stop{grid-template-columns:minmax(0,1fr)}.map{--lab:64px}.lane b{font-size:12px}.bar{font-size:11px;padding:0 6px}.months{font-size:11px}.months i{display:none}}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 12px;padding-inline-start:7em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6.5em;margin-inline-start:-6.5em;font-weight:700}}
+@media(prefers-reduced-motion:no-preference){.stop{transition:opacity .25s}.chip{transition:background .2s}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="band"><div class="wrap">
+<h1>電子書聯盟（TAEBDC）一年的作業時間軸</h1>
+<p class="lead">從選書說明會、試用、評選、報價、招標，到交貨驗收和 raw data，依每年大概的時間點排好。10 月起「今年的交貨」和「明年的提報」會同時進行，是最容易漏掉事情的時段。</p>
+<div class="map">
+<div class="months" id="months"></div>
+<div id="lanes"></div>
+<p class="note">⚠ 10–12 月兩條線同時跑：今年案在燒光碟、寄光碟、準備 raw data，明年案已經要提報書單、申請試用。</p>
+</div>
+</div></header>
+
+<nav class="band"><div class="wrap chips" id="chips"><small>看誰的工作：</small></div></nav>
+
+<main class="band"><div class="wrap" id="phases"></div></main>
+
+<section class="band lessons"><div class="wrap">
+<h2>過去踩過的雷</h2>
+<div class="grid" id="lessons"></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+<h2 style="margin:0 0 14px;font-size:clamp(22px,2.6vw,28px)">主要窗口</h2>
+<table class="stack">
+<thead><tr><th>單位</th><th>窗口</th><th>負責的事</th></tr></thead>
+<tbody>
+<tr><td>聯盟徵集小組（臺大圖書館採編組）</td><td>徵集小組承辦人</td><td>說明會、試用、書單查核、評選、擬購書單報價</td></tr>
+<tr><td>聯盟採購小組（師大圖書館）</td><td>採購小組承辦人</td><td>招標、決標、驗收、總驗、保固金、raw data</td></tr>
+<tr><td>原廠窗口</td><td>各出版社業務窗口</td><td>提報書單、試用與正式開通、MARC</td></tr>
+<tr><td>公司內部</td><td>業務主管、業務、客服</td><td>主管確認；公司底價；領標、客服</td></tr>
+<tr><td>支援單位</td><td>編目、燒錄、耗材、行政同事</td><td>MARC 編目、光碟燒錄、耗材、標籤列印與寄送</td></tr>
+</tbody></table>
+<footer><p>時間點依 114–115 年度的實際作業整理，每年請以聯盟當年度的通知為準。</p></footer>
+</div></section>
+
+<script>
+{
+const P=[
+{id:'a',c:'--a',name:'A 提報與試用',span:'前一年 10 月中 – 1 月底',desc:'為下一年度的採購案提報書單、開試用。收到說明會通知就要開始，不要等說明會結束。',
+ s:[
+ ['10 月中','收到選書政策說明會通知，報名','out',['通知裡會寫試用資料的提交期限和試用期間，馬上記進行事曆'],'收到通知當天就啟動，不是等說明會之後'],
+ ['10 月中–月底','向出版社索取可提報書單','pub',['通常是近五年出版的書，Collection 或 P&C 都可以','向各出版社的業務窗口索取']],
+ ['10 月底–11 月初','內部挑選要提報、要試用的書','in',['交主管確認']],
+ ['11 月初','向出版社申請試用','pub',['只能用 IP 開通，不能用帳密','附試用書單和成員館清單','試用要開到 1/31'],'原廠開通大約要 2 週，至少提前 3 週申請'],
+ ['11 月初','聯盟開通書單上傳與複本查核系統','out',['系統帳號的聯絡人會成為聯盟一整年的服務窗口']],
+ ['11 月中','依聯盟格式整理書單、試用清單格式、使用手冊','in',['可以先拿去年的檔案改年度和窗口','學門分類、eISBN、版次、作者都要填'],'試用連結的版次要和書單上的 ISBN 一致'],
+ ['11 月下旬','把試用資料交給徵集小組','out',['試用清單格式、試用書單、使用手冊（附檢索說明）']],
+ ['12/1 – 1/31','成員館試用，處理試用期間的問題','out',['連結打不開、找不到書時，先請原廠查']]]},
+{id:'b',c:'--b',name:'B 書單與評選',span:'12 月 – 4 月',desc:'交報價摘要表，參加評選，評選後再修正書單。',
+ s:[
+ ['12 月中下旬','在系統上完成複本查核，交報價摘要表','out',['寄正式書單和報價摘要表'],'寄信時要同時把最新版書單上傳到系統'],
+ ['1 月上旬','回覆徵集小組的複本查核意見','out',[]],
+ ['1 月中','收到評選會預告，開始準備簡報','in',['可以參考去年的評審會議簡報']],
+ ['2 月上旬','交評選簡報和出席名單','out',['PPT 為主，另附 PDF 備用']],
+ ['2 月下旬','產品評選會','out',['報告 5 分鐘、答詢 5 分鐘','評選項目：價格倍數、同時上線人數、複本補償、COUNTER 統計、raw data、MARC、校外連線、試用滿意度'],'先向原廠要試用期間的使用統計，當作佐證'],
+ ['2 月底 – 4 月底','評選後的書單查核','out',['各館查核後退回修改'],'改的地方一律用紅字，書單有改，報價摘要表要同步改']]},
+{id:'c',c:'--c',name:'C 成員館選書',span:'3 月 – 7 月',desc:'由聯盟主導，廠商可以主動詢問進度、做推廣。',
+ s:[
+ ['3 月 – 7 月','聯盟成員館投票、統計結果','out',['可以主動問進度，也可以趁這段時間做推廣']],
+ ['7 月中','回覆會員大會的出席名單','out',[]],
+ ['7 月底','會員大會廠商 Q&A（線上）','out',[]]]},
+{id:'d',c:'--d',name:'D 報價與議價',span:'8 月',desc:'收到擬購書單後回覆時間很短，公司底價要先準備好。',
+ s:[
+ ['8 月上旬','收到 P&C 擬購書單，回覆美金報價','out',['大約只有 3 個工作天','書單的序號欄不能動，書目資訊有修改用紅字標示']],
+ ['8 月中','向公司取得底價','in',['可能有不同本數的方案'],'新版書如果用今年的底價計算，漲幅可能很不合理，要提早談'],
+ ['8 月下旬','各館查核後修正，交正式報價單（免稅）','out',['報價單上採購小組的電話要寫對']]]},
+{id:'e',c:'--e',name:'E 招標與決標',span:'9 月',desc:'決標後 30 天內要完成開通、驗收、收齊紀錄表，很多事要在決標前就先啟動。',
+ s:[
+ ['9 月初','申請光碟耗材，預約燒錄和行政人力','in',['光碟、封套、氣泡棉、信封、標籤紙（標籤紙要另外跟採購領）'],'時間直接跟負責執行的同事確認，不要只依轉述的期限推估'],
+ ['9 月上旬','第一標公告，當天請客服同事領標','in',['確認截標時間（可能是週一早上 8 點）和押標金']],
+ ['9 月上旬','向原廠申請正式開通','pub',['決標前就先申請，目標在決標後 2 週內開好']],
+ ['9 月中','通知編目團隊預留人力','in',['開通後提供連結和原廠 MARC']],
+ ['9 月中下旬','決標，當天回傳決標書單','out',['書單最後一欄加決標金額，不能有小數，要加總'],'履約期限是決標後 30 天']]},
+{id:'f',c:'--f',name:'F 交貨驗收',span:'9 月下旬 – 10 月',desc:'寄驗收信、追蹤各館、總驗收。',
+ s:[
+ ['決標後 3–4 天','驗收信先給採購小組過目，再寄給各成員館','out',['5 份文件：驗收測試記錄表、使用手冊、簡介、書單（含 URL、冊數）、連線啟用通知','信裡要註記「P&C 購案」，並告訴成員館怎麼取得使用統計']],
+ ['寄出後約 2 週','追蹤各館回傳，處理連線問題','out',['用 Excel 追蹤每館的回傳狀況'],'新舊閱讀器連結、IP、Word 字型都出過問題'],
+ ['10 月上旬','MARC 編目完成','in',['連結裡的特殊字元（例如 $&）會出問題，要先確認']],
+ ['10 月上旬','收齊各館驗收紀錄，回傳聯盟','out',['驗收文件合併 PDF 和交貨驗收清單總表']],
+ ['10 月中','收到總驗收通知，準備文件、燒總驗光碟','in',['驗收書單（紙本＋USB）、連線測試表、連線測試總表、保固切結書、驗收通知單、二聯式發票'],'連線測試表依保固切結書的順序排列並編號；驗收日期填各館的驗收合格日'],
+ ['10 月中下旬','到師大總驗收','out',['提前 15 分鐘到場']]]},
+{id:'g',c:'--g',name:'G 交貨後',span:'11 月 – 隔年 1 月',desc:'交貨光碟、Metadata、raw data、退保固金，和下一年度提報同時進行。',
+ s:[
+ ['11 月上旬','燒錄成員館交貨光碟','in',['預約燒錄同事，大約要 1 週']],
+ ['11 月中','印標籤、包裝、寄出交貨光碟','in',['用寄送清單合併列印標籤','遠的學校（澎湖、東部）先寄'],'提前約好協助寄送的同事，並確認對方做過；週末圖書館不收件'],
+ ['交貨後 1 個月內','繳交 Metadata','out',[]],
+ ['交貨後 3 個月內','繳交 raw data，取得收據','out',['出版社不提供時要自己下載每章的 PDF，再做 index.html'],'每本大約要 2 小時，提前 2 個月安排人力'],
+ ['隔年 1 月','申請退保固金','out',['保固金收據、申請函、匯款資料、回郵信封','順便取回 raw data 的收據']]]}
+];
+const lanes=[
+ ['今年採購案',[['b',0,4],['d',7,8],['e',8,9],['g',10,12]]],
+ ['今年（並行）',[['c',2,7],['f',8.6,10]]],
+ ['明年提報',[['a',9.4,12]]]
+];
+const who={out:['聯盟','out'],in:['對內','in'],pub:['出版社','pub']};
+const $=q=>document.querySelector(q);
+$('#months').innerHTML=Array.from({length:12},(_,i)=>`<span>${i+1}<i>月</i></span>`).join('');
+const nameOf=id=>P.find(p=>p.id===id).name.slice(2);
+$('#lanes').innerHTML=lanes.map(([lab,bars])=>`<div class="lane"><b>${lab}</b><div class="track">${bars.map(([id,s,e])=>`<button class="bar" data-go="${id}" style="left:${s/12*100}%;width:${(e-s)/12*100}%;background:var(${P.find(p=>p.id===id).c})" title="${nameOf(id)}">${id.toUpperCase()} ${nameOf(id)}</button>`).join('')}</div></div>`).join('');
+$('#phases').innerHTML=P.map(p=>`<section class="phase" id="${p.id}" style="--pc:var(${p.c})"><h2><span class="dot"></span>${p.name}<span style="font-size:15px;color:var(--mute);font-weight:500">${p.span}</span></h2><p>${p.desc}</p><ol class="stops">${p.s.map(([t,h,w,li,tip])=>`<li class="stop" data-w="${w}"><div class="when">${t}</div><div class="what"><h3>${h}<span class="tags"><span class="tag ${who[w][1]}">${who[w][0]}</span></span></h3>${li.length?`<ul>${li.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${tip?`<div class="tip"><b>注意</b>　${tip}</div>`:''}</div></li>`).join('')}</ol></section>`).join('');
+const chips=[['all','全部'],['out','對聯盟'],['in','對內'],['pub','對出版社']];
+$('#chips').insertAdjacentHTML('beforeend',chips.map(([k,l],i)=>`<button class="chip" data-k="${k}" aria-pressed="${i===0}">${l}</button>`).join(''));
+const apply=k=>{document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));document.querySelectorAll('.stop').forEach(s=>s.classList.toggle('hide',k!=='all'&&s.dataset.w!==k));try{localStorage.setItem('taebdc-filter',k)}catch(e){}};
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b)apply(b.dataset.k)});
+$('#lanes').addEventListener('click',e=>{const b=e.target.closest('.bar');if(b)document.getElementById(b.dataset.go).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})});
+try{const k=localStorage.getItem('taebdc-filter');if(k)apply(k)}catch(e){}
+const L=[
+ ['說明會通知一到就開始','試用資料的期限在說明會後兩週左右，加上原廠開通要 2 週，等說明會結束才動會來不及。'],
+ ['10–12 月要同時顧兩條線','今年的交貨光碟、raw data 和明年的提報、試用擠在同一段時間，建議 9 月底就把兩邊的期限排進行事曆。'],
+ ['執行細節直接跟做事的人確認','行政、燒錄、編目同事的時間和經驗，要直接問負責的人，排程才會準確。'],
+ ['書單和報價摘要表一起改','只要書單有修改（出版年、刪書），報價摘要表要同步修正；修改處一律用紅字。'],
+ ['raw data 提早排人力','出版社可能不提供 raw data，自己下載每本大約要 2 小時，提前 2 個月找工讀生。'],
+ ['寄件要留紀錄','交貨光碟用可以追蹤的方式寄，寄件清單和收據存進當年度的資料夾。']
+];
+$('#lessons').innerHTML=L.map(([h,p])=>`<div class="card"><h3>${h}</h3><p>${p}</p></div>`).join('');
+}
+</script>
+</body>
+</html>
