@@ -1,0 +1,14 @@
+{
+  "updated": "2026-11-22",
+  "items": [
+    {
+      "id": "emily-work-system",
+      "title": "Emily 的工作管理系統",
+      "desc": "工作、任務、推廣三套管理系統",
+      "type": "tools",
+      "tags": ["內部", "使用中"],
+      "date": "2026-10",
+      "url": "https://emilychen1212.github.io/emily-work-system/"
+    }
+  ]
+}

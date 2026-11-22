@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emily's workbench</title>
+<meta name="description" content="Emily 工作中製作的工具、資料頁、活動頁與教學頁總覽">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #12305C;
+  --navy-2: #1A3D70;
+  --blue: #1E5FB4;
+  --blue-soft: #E6EEF9;
+  --ground: #F5F7FB;
+  --line: #D9E2EF;
+  --muted: #5A6B85;
+  --orange: #F28A1E;
+  --orange-ink: #B4560A;
+  --orange-soft: #FFF8F0;
+  --font: "Noto Sans TC", system-ui, -apple-system, "PingFang TC", sans-serif;
+  --num: "Outfit", "Noto Sans TC", sans-serif;
+
+  /* 類型顏色：主色 / 淡底 */
+  --tools: #1E5FB4;     --tools-soft: #E6EEF9;
+  --data: #0F7A6E;      --data-soft: #E3F3F0;
+  --campaigns: #C86A0E; --campaigns-soft: #FFF1E2;
+  --guides: #5B4BB7;    --guides-soft: #EEEBFA;
+  --lab: #B0306A;       --lab-soft: #FBE9F1;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ground); color: var(--navy); font: 16px/1.6 var(--font); }
+button, input { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+/* 標題列 */
+header { background: var(--navy); color: #fff; padding: 28px 0 30px; }
+.head { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 14px; flex: 1 1 320px; min-width: 0; }
+.brand-mark { position: relative; width: 40px; height: 40px; border-radius: 11px; background: var(--blue); flex: none; }
+.brand-mark::after { content: ""; position: absolute; right: -5px; top: -5px; width: 15px; height: 15px; border-radius: 50%; background: var(--orange); }
+.brand h1 { margin: 0; font: 800 28px/1.2 var(--num); letter-spacing: .2px; }
+.brand p { margin: 2px 0 0; color: #C3D0E4; font-size: 14px; }
+.search { position: relative; flex: 0 1 320px; width: 100%; }
+.search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search input { width: 100%; height: 46px; padding: 0 16px 0 42px; border-radius: 12px; border: 0; background: #fff; color: var(--navy); }
+.search input::placeholder { color: #8A98AE; }
+
+/* 統計 */
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: -18px 0 0; position: relative; }
+.stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+.stat .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+.stat b { display: block; font: 800 24px/1 var(--num); }
+.stat span { font-size: 13px; color: var(--muted); }
+
+/* 篩選 */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0 18px; }
+.chip { min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.chip:hover { border-color: var(--navy); }
+.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+.chip .n { font-family: var(--num); font-size: 12px; opacity: .7; }
+
+/* 卡片 */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; padding-bottom: 48px; }
+.card { display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 16px;
+  color: inherit; text-decoration: none; border-top: 4px solid var(--c); transition: transform .12s, box-shadow .12s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(18, 48, 92, .10); }
+.card.archived { opacity: .55; filter: grayscale(.6); }
+.card.archived:hover { opacity: .8; }
+.type { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 3px 10px 3px 8px; border-radius: 999px;
+  background: var(--cs); color: var(--c); font-size: 12px; font-weight: 700; }
+.card h2 { margin: 2px 0 0; font-size: 18px; font-weight: 900; line-height: 1.4; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; flex: 1; }
+.meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; padding: 1px 8px; border-radius: 6px; background: var(--ground); border: 1px solid var(--line); color: var(--navy-2); }
+.tag.hot { background: var(--orange-soft); border-color: #F6D3AE; color: var(--orange-ink); }
+.date { font: 500 13px var(--num); color: var(--muted); }
+
+.empty { grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: var(--muted); }
+footer { text-align: center; font-size: 13px; color: var(--muted); padding: 0 0 32px; }
+
+@media (max-width: 860px) {
+  .stats { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  header { padding: 22px 0 36px; }
+  .brand h1 { font-size: 24px; }
+  .search { flex-basis: 100%; }
+  .stats { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .stat { flex-direction: column; gap: 2px; padding: 10px 4px; text-align: center; }
+  .stat .ico { display: none; }
+  .stat b { font-size: 20px; }
+  .stat span { font-size: 12px; }
+  .filters { flex-wrap: nowrap; overflow-x: auto; margin-right: -20px; padding-right: 20px; scrollbar-width: none; }
+  .chip { flex: none; }
+  .grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <h1>Emily's workbench</h1>
+        <p>工作中做過的小工具、資料頁、活動頁與教學，都收在這裡</p>
+      </div>
+    </div>
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="搜尋標題、描述、標籤" aria-label="搜尋作品">
+    </label>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="stats" id="stats" aria-label="各類型數量"></section>
+  <nav class="filters" id="filters" aria-label="類型篩選"></nav>
+  <section class="grid" id="grid" aria-live="polite"></section>
+</main>
+<footer id="foot"></footer>
+
+<script>
+(function () {
+  var ICON = {
+    tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+    data: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    campaigns: '<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15 9a3 3 0 0 1 0 6M18 6a7 7 0 0 1 0 12"/>',
+    guides: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5"/>',
+    lab: '<path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10"/>'
+  };
+  var TYPES = [
+    { key: 'tools', label: '工具' },
+    { key: 'data', label: '資料頁' },
+    { key: 'campaigns', label: '活動頁' },
+    { key: 'guides', label: '教學' },
+    { key: 'lab', label: '實驗' }
+  ];
+  var LABEL = {};
+  TYPES.forEach(function (t) { LABEL[t.key] = t.label; });
+  var HOT = ['使用中', '客戶'];
+
+  var items = [];
+  var state = { type: 'all', q: '' };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function svg(type, size) {
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[type] || '') + '</svg>';
+  }
+  function colorVars(type) {
+    return '--c:var(--' + type + ');--cs:var(--' + type + '-soft)';
+  }
+  function isArchived(it) { return (it.tags || []).indexOf('已封存') !== -1; }
+  function isExternal(url) { return /^https?:\/\//i.test(url || ''); }
+
+  function renderStats() {
+    $('stats').innerHTML = TYPES.map(function (t) {
+      var n = items.filter(function (it) { return it.type === t.key; }).length;
+      return '<div class="stat" style="' + colorVars(t.key) + '">' +
+        '<div class="ico" style="background:var(--cs);color:var(--c)">' + svg(t.key, 20) + '</div>' +
+        '<div><b>' + n + '</b><span>' + t.label + '</span></div></div>';
+    }).join('');
+  }
+
+  function renderFilters() {
+    var list = [{ key: 'all', label: '全部' }].concat(TYPES);
+    $('filters').innerHTML = list.map(function (t) {
+      var n = t.key === 'all' ? items.length : items.filter(function (it) { return it.type === t.key; }).length;
+      return '<button class="chip" type="button" data-type="' + t.key + '" aria-pressed="' + (state.type === t.key) + '">' +
+        esc(t.label) + '<span class="n">' + n + '</span></button>';
+    }).join('');
+  }
+
+  function renderGrid() {
+    var q = state.q.trim().toLowerCase();
+    var list = items.filter(function (it) {
+      if (state.type !== 'all' && it.type !== state.type) return false;
+      if (!q) return true;
+      var hay = [it.title, it.desc].concat(it.tags || []).join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+    list.sort(function (a, b) {
+      var ar = isArchived(a), br = isArchived(b);
+      if (ar !== br) return ar ? 1 : -1;
+      return String(b.date || '').localeCompare(String(a.date || ''));
+    });
+    if (!list.length) {
+      $('grid').innerHTML = '<div class="empty">' + (items.length ? '找不到符合的作品' : '還沒有作品') + '</div>';
+      return;
+    }
+    $('grid').innerHTML = list.map(function (it) {
+      var ext = isExternal(it.url);
+      var tags = (it.tags || []).map(function (tg) {
+        return '<span class="tag' + (HOT.indexOf(tg) !== -1 ? ' hot' : '') + '">' + esc(tg) + '</span>';
+      }).join('');
+      return '<a class="card' + (isArchived(it) ? ' archived' : '') + '" style="' + colorVars(LABEL[it.type] ? it.type : 'tools') + '"' +
+        ' href="' + esc(it.url) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' +
+        '<span class="type">' + svg(it.type, 14) + esc(LABEL[it.type] || it.type) + '</span>' +
+        '<h2>' + esc(it.title) + '</h2>' +
+        '<p>' + esc(it.desc) + '</p>' +
+        '<div class="meta"><div class="tags">' + tags + '</div><span class="date">' + esc(it.date) + '</span></div>' +
+        '</a>';
+    }).join('');
+  }
+
+  $('filters').addEventListener('click', function (e) {
+    var btn = e.target.closest('.chip');
+    if (!btn) return;
+    state.type = btn.getAttribute('data-type');
+    renderFilters();
+    renderGrid();
+  });
+  $('q').addEventListener('input', function (e) {
+    state.q = e.target.value;
+    renderGrid();
+  });
+
+  fetch('catalog.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (data) {
+      items = Array.isArray(data.items) ? data.items : [];
+      $('foot').textContent = data.updated ? '最後更新 ' + data.updated : '';
+      renderStats();
+      renderFilters();
+      renderGrid();
+    })
+    .catch(function () {
+      renderStats();
+      renderFilters();
+      $('grid').innerHTML = '<div class="empty">讀不到作品清單（catalog.json），請稍後重新整理</div>';
+    });
+})();
+</script>
+</body>
+</html>
