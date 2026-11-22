@@ -206,6 +206,18 @@
       ],
       "date": "2026-03",
       "url": "lab/2026-03-ai-assistant/"
+    },
+    {
+      "id": "usage-stats-tool",
+      "title": "使用統計小工具",
+      "desc": "統計報表轉樞紐、圖表、PPT",
+      "type": "tools",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-10",
+      "url": "https://github.com/emilychen1212/usage-stats-tool"
     }
   ]
 }
