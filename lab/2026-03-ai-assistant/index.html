@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作助理</title>
+<meta name="description" content="串 Notion 的工作助理">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e2ddd8;
+    --text: #1a1815;
+    --text2: #6b6560;
+    --text3: #a09a94;
+    --accent: #2d5a3d;
+    --accent-light: #e8f2eb;
+    --today: #2d5a3d;
+    --tracking: #7c5c2e;
+    --project: #2d4a6b;
+    --done: #a09a94;
+    --delay: #8b6914;
+    --cancel: #c0392b;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --radius: 10px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── 頂部 ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 56px;
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  /* ── 快速輸入 ── */
+  .quick-input-bar {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .quick-input-bar input {
+    flex: 1;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .quick-input-bar input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .quick-input-bar input::placeholder { color: var(--text3); }
+
+  .btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-secondary { background: var(--surface2); color: var(--text); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-sm { height: 28px; padding: 0 12px; font-size: 12px; }
+
+  /* ── 主內容 ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ── 統計卡 ── */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-card.s-today .stat-value { color: var(--today); }
+  .stat-card.s-tracking .stat-value { color: var(--tracking); }
+  .stat-card.s-project .stat-value { color: var(--project); }
+
+  /* ── 看板 ── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 768px) {
+    .board { grid-template-columns: 1fr; }
+    .stats-row { gap: 8px; }
+    .stat-card { min-width: 80px; padding: 10px 14px; }
+    .stat-value { font-size: 20px; }
+  }
+
+  .board-col {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 14px;
+    min-height: 200px;
+  }
+
+  .board-col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .col-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .col-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-today { background: var(--today); }
+  .dot-tracking { background: var(--tracking); }
+  .dot-project { background: var(--project); }
+
+  .col-count {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── 任務卡片 ── */
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
+    position: relative;
+  }
+
+  .task-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }
+
+  .task-card:last-child { margin-bottom: 0; }
+
+  .task-title {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .task-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .tag-client { background: var(--accent-light); color: var(--accent); }
+  .tag-date { background: var(--surface2); color: var(--text2); font-family: 'DM Mono', monospace; }
+  .tag-overdue { background: #fdecea; color: var(--cancel); }
+
+  /* ── 列表 ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .filter-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .list-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.12s;
+  }
+
+  .list-item:hover { box-shadow: var(--shadow); }
+
+  .stage-badge {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-今日收件 { background: #e8f2eb; color: var(--today); }
+  .badge-追蹤中   { background: #f5ede0; color: var(--tracking); }
+  .badge-每日追蹤 { background: #e5edf5; color: var(--project); }
+  .badge-已完成   { background: var(--surface2); color: var(--done); }
+  .badge-延後安排 { background: #fdf6e0; color: var(--delay); }
+  .badge-取消     { background: #fdecea; color: var(--cancel); }
+
+  .list-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .list-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    transform: translateY(8px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: block;
+    letter-spacing: 0.03em;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .ai-hint {
+    background: var(--accent-light);
+    border: 1px solid #c5deca;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 40px 0;
+    justify-content: center;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty {
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 32px 0;
+  }
+
+  .refresh-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(45,90,61,0.35);
+    transition: transform 0.15s, opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .refresh-btn:hover { transform: scale(1.08); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">工作助理</div>
+    <div class="quick-input-bar">
+      <input type="text" id="quickInput" placeholder="輸入任何一段話，AI 自動整理成任務…" />
+      <button class="btn btn-primary" onclick="handleQuickInput()">AI 分析</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 統計卡 -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card s-today">
+      <div class="stat-label">今日收件</div>
+      <div class="stat-value" id="cnt-today">—</div>
+    </div>
+    <div class="stat-card s-tracking">
+      <div class="stat-label">追蹤中</div>
+      <div class="stat-value" id="cnt-tracking">—</div>
+    </div>
+    <div class="stat-card s-project">
+      <div class="stat-label">每日追蹤</div>
+      <div class="stat-value" id="cnt-project">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">本月完成</div>
+      <div class="stat-value" id="cnt-done">—</div>
+    </div>
+  </div>
+
+  <!-- 看板 -->
+  <div class="section-title">看板</div>
+  <div class="board">
+    <div class="board-col">
+      <div class="board-col-header">
+        <div class="col-title"><span class="col-dot dot-today"></span>今日收件</div>
+        <span class="col-count" id="board-cnt-today">0</span>
+      </div>
+      <div id="board-today"></div>
+    </div>
+    <div class="board-col">
+      <div class="board-col-header">
+        <div class="col-title"><span class="col-dot dot-tracking"></span>追蹤中</div>
+        <span class="col-count" id="board-cnt-tracking">0</span>
+      </div>
+      <div id="board-tracking"></div>
+    </div>
+    <div class="board-col">
+      <div class="board-col-header">
+        <div class="col-title"><span class="col-dot dot-project"></span>每日追蹤</div>
+        <span class="col-count" id="board-cnt-project">0</span>
+      </div>
+      <div id="board-project"></div>
+    </div>
+  </div>
+
+  <!-- 列表 -->
+  <div class="section-title">所有任務</div>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter('all', this)">全部</button>
+    <button class="filter-btn" onclick="setFilter('今日收件', this)">今日收件</button>
+    <button class="filter-btn" onclick="setFilter('追蹤中', this)">追蹤中</button>
+    <button class="filter-btn" onclick="setFilter('每日追蹤', this)">每日追蹤</button>
+    <button class="filter-btn" onclick="setFilter('已完成', this)">已完成</button>
+    <button class="filter-btn" onclick="setFilter('延後安排', this)">延後安排</button>
+  </div>
+  <div id="taskList" class="task-list">
+    <div class="loading"><div class="spinner"></div>載入中…</div>
+  </div>
+</main>
+
+<!-- 重新整理按鈕 -->
+<button class="refresh-btn" onclick="loadTasks()" title="重新整理">↻</button>
+
+<!-- AI 預覽 Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal">
+    <div class="modal-title">AI 分析結果</div>
+    <div class="ai-hint" id="aiHint"></div>
+    <div class="form-group">
+      <label class="form-label">任務標題</label>
+      <input class="form-input" id="f-title" type="text" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">任務描述</label>
+      <textarea class="form-textarea" id="f-desc"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">任務階段</label>
+        <select class="form-select" id="f-stage">
+          <option>今日收件</option>
+          <option>追蹤中</option>
+          <option>每日追蹤</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">客戶（範疇）</label>
+        <select class="form-select" id="f-client">
+          <option value="">未指定</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">任務類別</label>
+        <select class="form-select" id="f-category">
+          <option value="">未指定</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">預計完成日</label>
+        <input class="form-input" id="f-date" type="date" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('previewModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmCreate()">寫入 Notion</button>
+    </div>
+  </div>
+</div>
+
+<!-- 任務詳情 Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-title" id="detail-title"></div>
+    <div class="form-group">
+      <label class="form-label">任務描述</label>
+      <div id="detail-desc" style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+      <div>
+        <div class="form-label">客戶</div>
+        <div id="detail-client" style="font-size:13px;color:var(--text)"></div>
+      </div>
+      <div>
+        <div class="form-label">類別</div>
+        <div id="detail-category" style="font-size:13px;color:var(--text)"></div>
+      </div>
+      <div>
+        <div class="form-label">預計完成</div>
+        <div id="detail-date" style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text)"></div>
+      </div>
+      <div>
+        <div class="form-label">建立日期</div>
+        <div id="detail-created" style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text)"></div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:16px">
+      <label class="form-label">更新階段</label>
+      <select class="form-select" id="detail-stage-select"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('detailModal')">關閉</button>
+      <button class="btn btn-primary" onclick="updateStage()">更新階段</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allTasks = [];
+let currentFilter = 'all';
+let currentTaskId = '';
+let options = { clients: [], categories: [], stages: [] };
+
+async function init() {
+  const res = await fetch('/api/options');
+  options = await res.json();
+  populateSelects();
+  await loadTasks();
+}
+
+function populateSelects() {
+  const clientSel = document.getElementById('f-client');
+  const catSel = document.getElementById('f-category');
+  const stageSel = document.getElementById('detail-stage-select');
+
+  options.clients.forEach(c => {
+    clientSel.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+  options.categories.forEach(c => {
+    catSel.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+  options.stages.forEach(s => {
+    stageSel.innerHTML += `<option value="${s}">${s}</option>`;
+  });
+}
+
+async function loadTasks() {
+  document.getElementById('taskList').innerHTML = '<div class="loading"><div class="spinner"></div>載入中…</div>';
+  const res = await fetch('/api/tasks');
+  const data = await res.json();
+  if (data.success) {
+    allTasks = data.tasks;
+    renderAll();
+  }
+}
+
+function renderAll() {
+  updateStats();
+  renderBoard();
+  renderList();
+}
+
+function updateStats() {
+  const today = new Date().toISOString().slice(0, 7);
+  document.getElementById('cnt-today').textContent = allTasks.filter(t => t.任務階段 === '今日收件').length;
+  document.getElementById('cnt-tracking').textContent = allTasks.filter(t => t.任務階段 === '追蹤中').length;
+  document.getElementById('cnt-project').textContent = allTasks.filter(t => t.任務階段 === '每日追蹤').length;
+  document.getElementById('cnt-done').textContent = allTasks.filter(t => t.任務階段 === '已完成' && t.建立時間?.startsWith(today)).length;
+}
+
+function renderBoard() {
+  const cols = { '今日收件': 'today', '追蹤中': 'tracking', '每日追蹤': 'project' };
+  Object.entries(cols).forEach(([stage, key]) => {
+    const tasks = allTasks.filter(t => t.任務階段 === stage);
+    document.getElementById(`board-cnt-${key}`).textContent = tasks.length;
+    const el = document.getElementById(`board-${key}`);
+    if (tasks.length === 0) {
+      el.innerHTML = '<div class="empty">暫無任務</div>';
+    } else {
+      el.innerHTML = tasks.slice(0, 8).map(t => taskCard(t)).join('');
+    }
+  });
+}
+
+function taskCard(t) {
+  const today = new Date().toISOString().slice(0, 10);
+  const overdue = t.預計完成 && t.預計完成 < today && t.任務階段 !== '已完成';
+  return `<div class="task-card" onclick="openDetail('${t.id}')">
+    <div class="task-title">${t.任務簡述 || '（無標題）'}</div>
+    <div class="task-meta">
+      ${t.範疇 ? `<span class="tag tag-client">${t.範疇}</span>` : ''}
+      ${t.預計完成 ? `<span class="tag ${overdue ? 'tag-overdue' : 'tag-date'}">${t.預計完成}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderList() {
+  const filtered = currentFilter === 'all'
+    ? allTasks
+    : allTasks.filter(t => t.任務階段 === currentFilter);
+
+  const el = document.getElementById('taskList');
+  if (filtered.length === 0) {
+    el.innerHTML = '<div class="empty">沒有符合的任務</div>';
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  el.innerHTML = filtered.map(t => {
+    const overdue = t.預計完成 && t.預計完成 < today && t.任務階段 !== '已完成';
+    return `<div class="list-item" onclick="openDetail('${t.id}')">
+      <span class="stage-badge badge-${t.任務階段}">${t.任務階段}</span>
+      <span class="list-title">${t.任務簡述 || '（無標題）'}</span>
+      <div class="list-meta">
+        ${t.範疇 ? `<span class="tag tag-client">${t.範疇}</span>` : ''}
+        ${t.預計完成 ? `<span class="tag ${overdue ? 'tag-overdue' : 'tag-date'}">${t.預計完成}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+// ── 快速輸入 ──
+async function handleQuickInput() {
+  const input = document.getElementById('quickInput').value.trim();
+  if (!input) return;
+
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = '分析中…';
+  btn.disabled = true;
+
+  const res = await fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input })
+  });
+
+  btn.textContent = 'AI 分析';
+  btn.disabled = false;
+
+  const data = await res.json();
+  if (!data.success) { alert('分析失敗，請再試一次'); return; }
+
+  const t = data.task;
+  document.getElementById('aiHint').textContent = '💡 ' + (t.判斷說明 || '已完成分析');
+  document.getElementById('f-title').value = t.任務簡述 || '';
+  document.getElementById('f-desc').value = t.任務描述 || '';
+  document.getElementById('f-stage').value = t.任務階段 || '今日收件';
+  document.getElementById('f-client').value = t.範疇 || '';
+  document.getElementById('f-category').value = t.任務類別 || '';
+  document.getElementById('f-date').value = t.預計完成 || '';
+
+  openModal('previewModal');
+}
+
+document.getElementById('quickInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleQuickInput();
+});
+
+async function confirmCreate() {
+  const task = {
+    任務簡述: document.getElementById('f-title').value,
+    任務描述: document.getElementById('f-desc').value,
+    任務階段: document.getElementById('f-stage').value,
+    範疇: document.getElementById('f-client').value || null,
+    任務類別: document.getElementById('f-category').value || null,
+    預計完成: document.getElementById('f-date').value || null,
+  };
+
+  const res = await fetch('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(task)
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    closeModal('previewModal');
+    document.getElementById('quickInput').value = '';
+    await loadTasks();
+  } else {
+    alert('寫入失敗，請再試一次');
+  }
+}
+
+// ── 任務詳情 ──
+function openDetail(id) {
+  const t = allTasks.find(x => x.id === id);
+  if (!t) return;
+  currentTaskId = id;
+  document.getElementById('detail-title').textContent = t.任務簡述 || '（無標題）';
+  document.getElementById('detail-desc').textContent = t.任務描述 || '無描述';
+  document.getElementById('detail-client').textContent = t.範疇 || '—';
+  document.getElementById('detail-category').textContent = t.任務類別 || '—';
+  document.getElementById('detail-date').textContent = t.預計完成 || '—';
+  document.getElementById('detail-created').textContent = t.建立時間 || '—';
+  document.getElementById('detail-stage-select').value = t.任務階段;
+  openModal('detailModal');
+}
+
+async function updateStage() {
+  const newStage = document.getElementById('detail-stage-select').value;
+  const res = await fetch(`/api/tasks/${currentTaskId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 任務階段: newStage })
+  });
+  const data = await res.json();
+  if (data.success) {
+    closeModal('detailModal');
+    await loadTasks();
+  } else {
+    alert('更新失敗');
+  }
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) closeModal(el.id);
+  });
+});
+
+init();
+</script>
+</body>
+</html>
