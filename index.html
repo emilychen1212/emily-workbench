@@ -74,6 +74,10 @@ header { background: var(--navy); color: #fff; padding: 28px 0 30px; }
 .card.archived:hover { opacity: .8; }
 .type { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 3px 10px 3px 8px; border-radius: 999px;
   background: var(--cs); color: var(--c); font-size: 12px; font-weight: 700; }
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pin { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 12px; font-weight: 700; }
+.card.pinned { box-shadow: 0 0 0 2px var(--orange); border-color: transparent; border-top-color: var(--c); }
+.card.pinned:hover { box-shadow: 0 0 0 2px var(--orange), 0 8px 20px rgba(18, 48, 92, .10); }
 .card h2 { margin: 2px 0 0; font-size: 18px; font-weight: 900; line-height: 1.4; }
 .card p { margin: 0; color: var(--muted); font-size: 14px; flex: 1; }
 .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
@@ -150,6 +154,7 @@ footer { text-align: center; font-size: 13px; color: var(--muted); padding: 0 0 
   var LABEL = {};
   TYPES.forEach(function (t) { LABEL[t.key] = t.label; });
   var HOT = ['使用中', '客戶'];
+  var PIN_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M5 17h14v-1.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2z"/></svg>';
 
   var items = [];
   var state = { type: 'all', q: '' };
@@ -167,6 +172,7 @@ footer { text-align: center; font-size: 13px; color: var(--muted); padding: 0 0 
     return '--c:var(--' + type + ');--cs:var(--' + type + '-soft)';
   }
   function isArchived(it) { return (it.tags || []).indexOf('已封存') !== -1; }
+  function isPinned(it) { return it.pinned === true; }
   function isExternal(url) { return /^https?:\/\//i.test(url || ''); }
 
   function renderStats() {
@@ -198,6 +204,8 @@ footer { text-align: center; font-size: 13px; color: var(--muted); padding: 0 0 
     list.sort(function (a, b) {
       var ar = isArchived(a), br = isArchived(b);
       if (ar !== br) return ar ? 1 : -1;
+      var ap = isPinned(a), bp = isPinned(b);
+      if (ap !== bp) return ap ? -1 : 1;
       return String(b.date || '').localeCompare(String(a.date || ''));
     });
     if (!list.length) {
@@ -209,9 +217,11 @@ footer { text-align: center; font-size: 13px; color: var(--muted); padding: 0 0 
       var tags = (it.tags || []).map(function (tg) {
         return '<span class="tag' + (HOT.indexOf(tg) !== -1 ? ' hot' : '') + '">' + esc(tg) + '</span>';
       }).join('');
-      return '<a class="card' + (isArchived(it) ? ' archived' : '') + '" style="' + colorVars(LABEL[it.type] ? it.type : 'tools') + '"' +
+      var pin = isPinned(it) && !isArchived(it);
+      return '<a class="card' + (isArchived(it) ? ' archived' : '') + (pin ? ' pinned' : '') + '" style="' + colorVars(LABEL[it.type] ? it.type : 'tools') + '"' +
         ' href="' + esc(it.url) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' +
-        '<span class="type">' + svg(it.type, 14) + esc(LABEL[it.type] || it.type) + '</span>' +
+        '<div class="card-top"><span class="type">' + svg(it.type, 14) + esc(LABEL[it.type] || it.type) + '</span>' +
+        (pin ? '<span class="pin" title="已釘選">' + PIN_SVG + '釘選</span>' : '') + '</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
         '<p>' + esc(it.desc) + '</p>' +
         '<div class="meta"><div class="tags">' + tags + '</div><span class="date">' + esc(it.date) + '</span></div>' +

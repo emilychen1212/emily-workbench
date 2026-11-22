@@ -14,6 +14,7 @@
 
 ## catalog.json 欄位
 `id`、`title`、`desc`（一句話，15 字內）、`type`（tools/data/campaigns/guides/lab）、`tags`（產品／對象：內部或客戶／狀態：使用中或已封存）、`date`（YYYY-MM）、`url`（repo 內作品用相對路徑）
+- 選填 `pinned: true`：釘選，卡片排在最前面並顯示「釘選」標記。Emily 說「釘選／取消釘選 X」時加上或刪掉這個欄位，commit 用 `update(類型): 標題`。已封存的作品就算有釘選也照樣排在最後
 
 ## 上架前必做：敏感資料檢查
 本 repo 為 Public。推送前掃描客戶聯絡人姓名、email、電話、報價金額、合約價、議價資訊。發現任何一項就先停下來列給 Emily，等她確認或改成去識別化之後才推。
