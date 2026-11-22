@@ -11,7 +11,8 @@
         "使用中"
       ],
       "date": "2026-10",
-      "url": "https://emilychen1212.github.io/emily-work-system/"
+      "url": "https://emilychen1212.github.io/emily-work-system/",
+      "pinned": true
     },
     {
       "id": "training-system",
@@ -60,7 +61,8 @@
         "使用中"
       ],
       "date": "2026-11",
-      "url": "https://emilychen1212.github.io/flysheet-event-draw/"
+      "url": "https://emilychen1212.github.io/flysheet-event-draw/",
+      "pinned": true
     },
     {
       "id": "mmu-healthlibrary",
@@ -109,7 +111,8 @@
         "使用中"
       ],
       "date": "2026-11",
-      "url": "tools/2026-11-pdf-filler/"
+      "url": "tools/2026-11-pdf-filler/",
+      "pinned": true
     },
     {
       "id": "tmla-bingo",
