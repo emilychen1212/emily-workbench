@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生理所網站地圖</title>
+<meta name="description" content="生理所網站頁面架構總覽">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1F2D3D;
+    --navy-soft:#3A4A5C;
+    --barley:#F4EFE4;
+    --paper:#FBF8F1;
+    --ink:#2B2620;
+    --ink-soft:#6B6355;
+    --line:#C9BDA0;
+    --clay:#B5794A;
+
+    --green:#22C55E;
+    --green-soft:#DFF6E7;
+    --green-text:#0F6E33;
+
+    --sky:#0EA5E9;
+    --sky-soft:#DDF1FB;
+    --sky-text:#0A6E9C;
+
+    --gray:#8B8981;
+    --gray-soft:#EAE7DE;
+    --gray-text:#5A574E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--barley);
+    color:var(--ink);
+    font-family:'Noto Sans TC', sans-serif;
+    line-height:1.5;
+    padding:28px 16px 90px;
+  }
+  .wrap{max-width:1300px;margin:0 auto;}
+
+  header{
+    background:var(--navy);
+    color:var(--barley);
+    border-radius:14px;
+    padding:24px 26px;
+    margin-bottom:18px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:150px;height:150px; border-radius:50%;
+    background:var(--navy-soft); opacity:.5;
+  }
+  .eyebrow{font-size:12px;letter-spacing:.14em;color:#C9B98A;font-weight:600;position:relative;}
+  h1{font-family:'Noto Serif TC', serif;font-size:22px;font-weight:700;margin:8px 0 6px;position:relative;}
+  .subline{font-size:13px;color:#B9C4CE;position:relative;}
+
+  .legend{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+  .legend-item{
+    display:flex; align-items:center; gap:6px;
+    font-size:12.5px; font-weight:600;
+    padding:6px 12px; border-radius:99px;
+  }
+  .legend-item.content{background:var(--green-soft); color:var(--green-text);}
+  .legend-item.dynamic{background:var(--sky-soft); color:var(--sky-text);}
+  .legend-item.external{background:var(--gray-soft); color:var(--gray-text);}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dot.content{background:var(--green);}
+  .dot.dynamic{background:var(--sky);}
+  .dot.external{background:var(--gray);}
+
+  .root-row{
+    display:flex;
+    justify-content:center;
+    margin-bottom:0;
+  }
+  .root-node{
+    background:var(--navy);
+    color:var(--barley);
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    font-size:14px;
+    padding:10px 22px;
+    border-radius:10px;
+  }
+  .root-stem{
+    width:1px;
+    height:20px;
+    background:var(--line);
+    margin:0 auto;
+  }
+
+  .scroll-hint{font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;text-align:center;}
+
+  .columns-scroll{overflow-x:auto; padding-bottom:12px;}
+  .columns-wrap{
+    display:flex;
+    gap:22px;
+    border-top:1px solid var(--line);
+    padding-top:22px;
+    min-width:max-content;
+  }
+
+  .column{
+    width:216px;
+    flex-shrink:0;
+    position:relative;
+  }
+  .column::before{
+    content:"";
+    position:absolute;
+    top:-22px; left:50%;
+    width:1px; height:22px;
+    background:var(--line);
+  }
+
+  .col-head{
+    background:var(--clay);
+    color:#4A2E12;
+    font-weight:700;
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:8px;
+    text-align:center;
+    margin-bottom:4px;
+  }
+  .col-head .cnt{
+    font-size:10.5px;
+    font-weight:600;
+    background:rgba(74,46,18,.18);
+    padding:1px 7px;
+    border-radius:99px;
+    margin-left:6px;
+  }
+
+  .col-stem{
+    width:1px;
+    height:14px;
+    background:var(--line);
+    margin:0 auto;
+  }
+
+  .col-children{
+    border-left:1px solid var(--line);
+    margin-left:9px;
+    padding-left:0;
+  }
+  .leaf{
+    position:relative;
+    padding:5px 0 5px 20px;
+    margin-bottom:3px;
+  }
+  .leaf::before{
+    content:"";
+    position:absolute;
+    left:0; top:15px;
+    width:16px; height:1px;
+    background:var(--line);
+  }
+
+  .leaf-node{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12.5px;
+    cursor:default;
+    position:relative;
+    transition:border-color .15s, background .15s;
+  }
+  .leaf-node.content:hover{border-color:var(--green); background:var(--green-soft);}
+  .leaf-node.dynamic:hover{border-color:var(--sky); background:var(--sky-soft);}
+  .leaf-node.external:hover{border-color:var(--gray); background:var(--gray-soft);}
+
+  .tip{
+    display:none;
+    position:absolute;
+    z-index:20;
+    left:0; top:calc(100% + 8px);
+    background:var(--navy);
+    color:var(--barley);
+    font-size:11.5px;
+    line-height:1.55;
+    padding:10px 12px;
+    border-radius:8px;
+    width:200px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
+  }
+  .leaf-node:hover .tip{display:block;}
+  .tip.above{bottom:calc(100% + 8px); top:auto;}
+  .tip .path{
+    display:block;
+    color:#C9B98A;
+    font-size:10px;
+    margin-top:5px;
+    font-family:monospace;
+    word-break:break-all;
+  }
+  .tip .verify{
+    display:block;
+    font-size:10px;
+    margin-top:4px;
+    font-weight:600;
+  }
+  .tip .verify.checked{color:#8FE0A8;}
+  .tip .verify.inferred{color:#E0C88F;}
+
+  footer{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:26px;}
+
+  @media (max-width:520px){
+    header{padding:20px;}
+    h1{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">現況盤點</div>
+    <h1>生理所網站地圖</h1>
+    <div class="subline">physiology.mc.ntu.edu.tw ｜ 分類橫向排列，子項目縱向排列</div>
+  </header>
+
+  <div class="legend">
+    <div class="legend-item content"><span class="dot content"></span>靜態內容頁</div>
+    <div class="legend-item dynamic"><span class="dot dynamic"></span>動態／資料庫功能</div>
+    <div class="legend-item external"><span class="dot external"></span>外部連結</div>
+  </div>
+  <div class="scroll-hint" style="text-align:left;margin-top:-8px;">hover 提示框內會標註「✓ 已實際查看」或「同類推論，未逐頁查證」</div>
+
+  <div class="root-row"><div class="root-node">首頁 physiology.mc.ntu.edu.tw</div></div>
+  <div class="root-stem"></div>
+
+  <div class="scroll-hint">分類較多，可左右滑動；滑鼠移到頁面節點上看簡述與路徑</div>
+
+  <div class="columns-scroll">
+    <div class="columns-wrap" id="columnsWrap"></div>
+  </div>
+
+  <footer>圖僅供會議討論用，非正式資訊架構規格書</footer>
+</div>
+
+<script>
+const data = [
+  {
+    cat: "系所簡介",
+    children: [
+      {n:"科所簡介", p:"/About/About?id=103", d:"研究所整體介紹、宗旨與定位說明。", t:"content", v:false},
+      {n:"招生簡介", p:"/About/About?id=104", d:"碩博士班招生方向與簡要說明頁。", t:"content", v:false},
+      {n:"歷史沿革", p:"/About/About?id=106", d:"研究所成立與發展沿革介紹。", t:"content", v:false},
+      {n:"舊影回顧", p:"/About/About4", d:"歷史照片集錦，回顧早期系所樣貌，推測為一次性整理不常更新。", t:"content", v:false},
+      {n:"活動剪影", p:"/About/About5", d:"活動相簿列表，含日期與「更多」清單，會持續新增。", t:"dynamic", v:true},
+    ]
+  },
+  {
+    cat: "科所公告",
+    children: [
+      {n:"最新消息", p:"/News/News", d:"公告列表，含日期與標題，如獎助金、榮譽事蹟等即時訊息。", t:"dynamic", v:true},
+      {n:"榮譽榜", p:"/News/Honer", d:"師生獲獎與榮譽事蹟清單，含年份與得獎人整理。", t:"dynamic", v:true},
+    ]
+  },
+  {
+    cat: "成員簡介",
+    children: [
+      {n:"生理所主任", p:"/Faculty/Faculty?openid=1", d:"以 openid 參數從教師資料庫撈出單一筆資料。", t:"dynamic", v:false},
+      {n:"專任與合聘教師", p:"/Faculty/Faculty_List", d:"專任及合聘教師名單，含個人研究領域連結。", t:"dynamic", v:false},
+      {n:"名譽與兼任教師", p:"/Faculty/Faculty_List2", d:"名譽教授與兼任教師名單列表。", t:"dynamic", v:false},
+      {n:"助教與職員", p:"/Faculty/Faculty_List3", d:"行政助教與職員聯絡資訊列表。", t:"dynamic", v:false},
+      {n:"學生園地（博士班）", p:"/Faculty/Faculty_List4", d:"在學博士生名單與簡介列表。", t:"dynamic", v:false},
+      {n:"學生園地（碩士班）", p:"/Faculty/Faculty_List5", d:"在學碩士生名單與簡介列表。", t:"dynamic", v:false},
+    ]
+  },
+  {
+    cat: "研究生專區",
+    children: [
+      {n:"研究生手冊", p:"/Student/Students", d:"在學研究生所需規範與手冊內容，同修業規定為長文字頁。", t:"content", v:false},
+      {n:"修業規定", p:"/Student/Students2", d:"確認為整段固定說明文字＋流程圖，無清單結構。", t:"content", v:true},
+      {n:"課程總表", p:"/Student/Students3", d:"全所課程總覽表格，推測為手動維護的表格頁。", t:"content", v:false},
+      {n:"台大課程地圖", p:"coursemap.aca.ntu.edu.tw（外部）", d:"連結至台大校級課程地圖系統，非自建頁面。", t:"external", v:true},
+      {n:"獎助學金", p:"/Student/Students4", d:"各項獎助學金公告與申請資格說明。", t:"content", v:false},
+      {n:"導師工作委員會", p:"/Intro/Intro_01N", d:"導師制度相關委員會介紹頁。", t:"content", v:false},
+    ]
+  },
+  {
+    cat: "修課公告",
+    children: [
+      {n:"生理學", p:"/Course/Course", d:"確認有日期＋公布事項表格、PDF/DOC附件、串接講義下載系統。", t:"dynamic", v:true},
+      {n:"生理學甲", p:"/Course/Course2", d:"與「生理學」同模板，推測同為動態公告表格。", t:"dynamic", v:false},
+      {n:"人體生理學", p:"/Course/Course3", d:"與「生理學」同模板，推測同為動態公告表格。", t:"dynamic", v:false},
+      {n:"神經生理與內分泌學", p:"/Course/Course4", d:"與「生理學」同模板，推測同為動態公告表格。", t:"dynamic", v:false},
+      {n:"選修課程", p:"/Course/Course5", d:"與「生理學」同模板，推測同為動態公告表格。", t:"dynamic", v:false},
+    ]
+  },
+  {
+    cat: "環安衛資訊",
+    children: [
+      {n:"相關事宜公告", p:"/Safety/Safety", d:"確認為「日期｜標題」清單模板，與最新消息同款（目前無資料）。", t:"dynamic", v:true},
+      {n:"校/院資源", p:"/Safety/Safety2", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+      {n:"科所資源", p:"/Safety/Safety3", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+      {n:"常用表格", p:"/Safety/Safety4", d:"確認內容區塊為空，屬於同一清單型模板。", t:"dynamic", v:true},
+      {n:"科所教育訓練", p:"/Safety/Safety5", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+    ]
+  },
+  {
+    cat: "公共空間設備",
+    children: [
+      {n:"相關事宜公告", p:"/Facility/Facility", d:"確認與環安衛的公告清單完全同模板（目前無資料）。", t:"dynamic", v:true},
+      {n:"公共實驗室", p:"/Facility/Facility2", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+      {n:"公共儀器", p:"/Facility/Facility3", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+      {n:"常用表格", p:"/Facility/Facility4", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+      {n:"科所教育訓練", p:"/Facility/Facility5", d:"同分類、推測同為清單型模板，未逐頁查證。", t:"dynamic", v:false},
+    ]
+  },
+  {
+    cat: "畢業生園地",
+    children: [
+      {n:"歷屆畢業生名單", p:"/Alumnus/Alumnus", d:"歷屆畢業生資料列表，推測含年份分類。", t:"dynamic", v:false},
+      {n:"畢業校友動態", p:"/Alumnus/Alumnus2", d:"校友近況更新列表，推測為動態清單。", t:"dynamic", v:false},
+      {n:"畢業生座談會花絮", p:"/Alumnus/Alumnus3", d:"座談會活動照片，推測與活動剪影同為相簿型清單。", t:"dynamic", v:false},
+    ]
+  },
+  {
+    cat: "學生登入系統",
+    children: [
+      {n:"登入", p:"/Login/Login", d:"學號密碼登入入口，確認個人資料與大頭照上傳。", t:"dynamic", v:true},
+      {n:"個人資料", p:"/Member/Member", d:"登入後個人基本資料檢視／編輯頁。", t:"dynamic", v:true},
+      {n:"成績查詢", p:"/Member/Member2", d:"課程成績查詢功能，含複查申請流程說明。", t:"dynamic", v:true},
+      {n:"下載講義", p:"/Member/Member3", d:"登入後可下載課程講義的功能頁，與修課公告串接。", t:"dynamic", v:true},
+      {n:"修改密碼", p:"/Member/Member4", d:"帳號密碼修改功能。", t:"dynamic", v:true},
+      {n:"登出", p:"/Member/Logout", d:"登出功能，非內容頁。", t:"dynamic", v:true},
+    ]
+  },
+];
+
+const wrap = document.getElementById('columnsWrap');
+
+data.forEach(cat => {
+  const col = document.createElement('div');
+  col.className = 'column';
+
+  const head = document.createElement('div');
+  head.className = 'col-head';
+  head.innerHTML = `${cat.cat}<span class="cnt">${cat.children.length}</span>`;
+  col.appendChild(head);
+
+  const stem = document.createElement('div');
+  stem.className = 'col-stem';
+  col.appendChild(stem);
+
+  const childrenWrap = document.createElement('div');
+  childrenWrap.className = 'col-children';
+
+  cat.children.forEach((item, i) => {
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    const tipPos = i < cat.children.length / 2 ? 'below' : 'above';
+    const verifyLabel = item.v ? '✓ 已實際查看' : '同類推論，未逐頁查證';
+    const verifyClass = item.v ? 'checked' : 'inferred';
+    leaf.innerHTML = `
+      <div class="leaf-node ${item.t}">
+        <span class="dot ${item.t}"></span>
+        <span>${item.n}</span>
+        <div class="tip ${tipPos}">
+          ${item.d}
+          <span class="path">${item.p}</span>
+          <span class="verify ${verifyClass}">${verifyLabel}</span>
+        </div>
+      </div>
+    `;
+    childrenWrap.appendChild(leaf);
+  });
+
+  col.appendChild(childrenWrap);
+  wrap.appendChild(col);
+});
+</script>
+</body>
+</html>
