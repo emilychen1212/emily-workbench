@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國立陽明交通大學附設醫院 - 行動服務 App 雛形與無障礙互動原型</title>
+<meta name="description" content="醫院行動 App 畫面與互動原型">
+    <style>
+        /* Modern Reset and Layout Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", "Outfit", sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease, font-size 0.2s ease;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* High Contrast Variables */
+        body.high-contrast {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+
+        /* Container styling */
+        .workspace {
+            display: flex;
+            max-width: 1100px;
+            width: 100%;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        /* Phone Frame Wrapper */
+        .phone-container {
+            flex: 0 0 375px;
+            height: 760px;
+            background-color: #000;
+            border: 12px solid #222;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* iPhone Notch Mockup */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background-color: #222;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            z-index: 100;
+        }
+
+        /* App Main Screen */
+        .app-screen {
+            flex: 1;
+            background-color: #f7f9fc;
+            display: flex;
+            flex-direction: column;
+            padding-top: 25px; /* Leave space for notch */
+            position: relative;
+        }
+
+        /* App Header */
+        .app-header {
+            background: linear-gradient(135deg, #002d62 0%, #004b93 100%);
+            color: white;
+            padding: 15px 15px 12px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-logo {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .lang-btn {
+            background-color: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Campus Switcher */
+        .campus-switcher {
+            display: flex;
+            background-color: rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .campus-tab {
+            flex: 1;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.7);
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .campus-tab.active {
+            background-color: #008080;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        /* App Body Content */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Accessibility Font Resizing support */
+        .fontsize-large .app-content {
+            font-size: 18px !important;
+        }
+
+        .fontsize-large h3 {
+            font-size: 20px !important;
+        }
+
+        /* Quick Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .action-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.03);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            border-color: #008080;
+        }
+
+        .action-icon {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(0, 128, 128, 0.1);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #008080;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .action-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* High Contrast Card Styling Override */
+        body.high-contrast .action-card {
+            background-color: #000 !important;
+            border: 2px solid #ff0 !important;
+            color: #ff0 !important;
+            box-shadow: none !important;
+        }
+        body.high-contrast .action-label {
+            color: #ff0 !important;
+        }
+        body.high-contrast .action-icon {
+            background-color: #ff0 !important;
+            color: #000 !important;
+        }
+
+        /* Schedule Reminder Card */
+        .reminder-card {
+            background: linear-gradient(135deg, rgba(0, 45, 98, 0.03) 0%, rgba(0, 128, 128, 0.03) 100%);
+            border: 1.5px solid rgba(0, 128, 128, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .reminder-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #008080;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reminder-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .reminder-doctor {
+            font-weight: bold;
+            color: #002d62;
+        }
+
+        /* High Contrast reminder card override */
+        body.high-contrast .reminder-card {
+            background-color: #000 !important;
+            border: 2px dashed #ff0 !important;
+            color: #ff0 !important;
+        }
+        body.high-contrast .reminder-title {
+            color: #ff0 !important;
+        }
+        body.high-contrast .reminder-doctor {
+            color: #ff0 !important;
+        }
+
+        /* Bottom Tab Navigation */
+        .bottom-nav {
+            height: 60px;
+            background-color: white;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            background: transparent;
+            color: #888;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            padding: 8px 0;
+        }
+
+        .nav-item.active {
+            color: #002d62;
+        }
+
+        .nav-item-icon {
+            font-size: 18px;
+        }
+
+        /* High contrast bottom navigation */
+        body.high-contrast .bottom-nav {
+            background-color: #000 !important;
+            border-top: 2px solid #ff0 !important;
+        }
+        body.high-contrast .nav-item {
+            color: #fff !important;
+        }
+        body.high-contrast .nav-item.active {
+            color: #ff0 !important;
+            text-decoration: underline;
+        }
+
+        /* Inner Screens setup */
+        .app-view {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .app-view.active {
+            display: flex;
+        }
+
+        /* Sub-screen header */
+        .view-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #002d62;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: #008080;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Step Indicator */
+        .step-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #eef2f6;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .step-item.active {
+            color: #008080;
+        }
+
+        /* List Items */
+        .list-item-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .list-item-card:hover {
+            border-color: #008080;
+        }
+
+        .list-item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .list-item-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .list-item-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .list-item-badge {
+            background-color: rgba(0,128,128,0.1);
+            color: #008080;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* High contrast list items */
+        body.high-contrast .list-item-card {
+            background-color: #000 !important;
+            border: 2px solid #ff0 !important;
+            color: #ff0 !important;
+        }
+        body.high-contrast .list-item-title {
+            color: #ff0 !important;
+        }
+        body.high-contrast .list-item-subtitle {
+            color: #fff !important;
+        }
+        body.high-contrast .list-item-badge {
+            background-color: #ff0 !important;
+            color: #000 !important;
+        }
+
+        /* Confirm Registration screen layout */
+        .confirm-box {
+            background-color: white;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .confirm-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            padding-bottom: 8px;
+        }
+
+        .confirm-row-val {
+            font-weight: bold;
+            color: #002d62;
+        }
+
+        .highlight-campus {
+            color: #e06666 !important;
+            font-size: 16px;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            background: linear-gradient(135deg, #008080 0%, #006666 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,128,128,0.2);
+            text-align: center;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        /* High contrast submit button */
+        body.high-contrast .btn-submit {
+            background: #ff0 !important;
+            color: #000 !important;
+            border: 2px solid #ff0 !important;
+            box-shadow: none !important;
+        }
+
+        /* Calling queue details */
+        .queue-header-card {
+            background: linear-gradient(135deg, #002d62 0%, #004b93 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(0,45,98,0.15);
+        }
+
+        .queue-room {
+            font-size: 14px;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+
+        .queue-number-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-shadow: 0 2px 10px rgba(0,255,204,0.3);
+        }
+
+        .queue-your-number {
+            font-size: 14px;
+            background-color: rgba(255,255,255,0.15);
+            padding: 6px 15px;
+            border-radius: 20px;
+            align-self: center;
+        }
+
+        .queue-wait-time {
+            font-size: 14px;
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+
+        /* High contrast queue header card override */
+        body.high-contrast .queue-header-card {
+            background: #000 !important;
+            border: 3px double #ff0 !important;
+            color: #ff0 !important;
+            box-shadow: none !important;
+        }
+        body.high-contrast .queue-number-display {
+            color: #ff0 !important;
+            text-shadow: none !important;
+        }
+        body.high-contrast .queue-your-number {
+            background-color: #ff0 !important;
+            color: #000 !important;
+        }
+        body.high-contrast .queue-wait-time {
+            color: #fff !important;
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Control Panel (Right Side) */
+        .control-panel {
+            flex: 1;
+            max-width: 500px;
+            background-color: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* High contrast control panel */
+        body.high-contrast .control-panel {
+            background-color: #000 !important;
+            border: 2px solid #ff0 !important;
+            color: #ff0 !important;
+        }
+
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 16px;
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #002d62;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.high-contrast .panel-title {
+            color: #ff0 !important;
+        }
+
+        .control-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            flex: 1;
+            background-color: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .control-btn.active {
+            background-color: #008080;
+            color: white;
+            border-color: #008080;
+        }
+
+        /* High contrast control buttons override */
+        body.high-contrast .control-btn {
+            background-color: #000 !important;
+            color: #fff !important;
+            border: 2px solid #fff !important;
+        }
+        body.high-contrast .control-btn.active {
+            background-color: #ff0 !important;
+            color: #000 !important;
+            border-color: #ff0 !important;
+        }
+
+        /* Voice Reader Box */
+        .voice-output-box {
+            background-color: #f7f9fc;
+            border: 1.5px solid #008080;
+            border-radius: 16px;
+            padding: 16px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        body.high-contrast .voice-output-box {
+            background-color: #000 !important;
+            border: 2px dashed #ff0 !important;
+            color: #ff0 !important;
+        }
+
+        .voice-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #008080;
+            text-transform: uppercase;
+        }
+
+        body.high-contrast .voice-label {
+            color: #ff0 !important;
+        }
+
+        .voice-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #444;
+            font-style: italic;
+        }
+
+        body.high-contrast .voice-text {
+            color: #fff !important;
+        }
+
+        /* Focused outlines simulator */
+        .focused-element {
+            outline: 3px solid #ffc107 !important;
+            outline-offset: 2px;
+        }
+
+        /* Geolocation banner simulation */
+        .geo-banner {
+            background-color: #fff8db;
+            border: 1px solid #ffd54f;
+            color: #8a6d3b;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        body.high-contrast .geo-banner {
+            background-color: #000 !important;
+            border: 2px solid #ff0 !important;
+            color: #ff0 !important;
+        }
+
+        /* Toggle switch component styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 24px;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #008080;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            width: 80%;
+        }
+
+        /* SVG Icon styling */
+        .svg-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="workspace">
+
+    <!-- Left side: smartphone mockup -->
+    <div class="phone-container">
+        <div class="notch"></div>
+        
+        <div class="app-screen" id="appScreen">
+            
+            <!-- Shared Header -->
+            <div class="app-header">
+                <div class="header-top">
+                    <div class="app-logo" id="logoText">陽交大附醫 行動服務</div>
+                    <button class="lang-btn" onclick="speak('切換語言. Switch Language.')" data-voice="切換語言，目前為繁體中文按鈕。Switch Language. Double tap to toggle.">EN / 繁中</button>
+                </div>
+                <div class="campus-switcher">
+                    <button class="campus-tab active" id="btnLan" onclick="switchCampus('lan')" data-voice="切換蘭陽院區，目前已選取標籤。Lanyang Campus Tab Selected.">蘭陽院區</button>
+                    <button class="campus-tab" id="btnXin" onclick="switchCampus('xin')" data-voice="切換新民院區標籤。Xinmin Campus Tab. Double tap to select.">新民院區</button>
+                </div>
+            </div>
+
+            <!-- Toast notification container -->
+            <div class="toast" id="toastMessage">掛號成功，已為您加入就醫日程！</div>
+
+            <!-- View 1: Home View -->
+            <div class="app-content app-view active" id="viewHome">
+                
+                <!-- Simulated GPS Geolocation suggestion banner -->
+                <div class="geo-banner" id="geoBanner" data-voice="智慧定位提醒：偵測到您目前位於校舍路，建議選取蘭陽院區，雙擊進行切換。">
+                    📍 智慧指引：偵測距離您最近為<strong>蘭陽院區</strong>
+                </div>
+
+                <!-- 2x2 Feature Actions Grid -->
+                <div class="action-grid">
+                    <div class="action-card" onclick="navTo('viewRegisterStep1')" data-voice="預約掛號按鈕，點擊後進入科別選取流程。Book Appointment Button. Double tap to start.">
+                        <div class="action-icon">📅</div>
+                        <div class="action-label">預約掛號</div>
+                    </div>
+                    <div class="action-card" onclick="navTo('viewQueue')" data-voice="看診進度按鈕，點擊後查詢門診即時叫號與候診預估。Clinic Queue Progress Button. Double tap to check.">
+                        <div class="action-icon">⏱️</div>
+                        <div class="action-label">看診進度</div>
+                    </div>
+                    <div class="action-card" onclick="showToast('目前暫無掛號日程紀錄')" data-voice="掛號查詢與取消按鈕，查詢已登記就診日程。My Bookings Button. Double tap to manage.">
+                        <div class="action-icon">🔍</div>
+                        <div class="action-label">查詢與取消</div>
+                    </div>
+                    <div class="action-card" onclick="showToast('正在開啟院區地圖指引...')" data-voice="交通指引按鈕，導航至蘭陽或新民院區。Hospital Directions Button. Double tap to view map.">
+                        <div class="action-icon">🚗</div>
+                        <div class="action-label">交通指引</div>
+                    </div>
+                </div>
+
+                <!-- My Schedule / Upcoming booking -->
+                <div class="reminder-card" data-voice="就醫備忘提醒：您下一次看診時間為明日上午九點三十分。內科第一診間林小明醫師，就醫號碼三十號。預約院區：蘭陽院區。">
+                    <div class="reminder-title">
+                        <span>🔔</span> 就醫備忘提醒 (明日預約)
+                    </div>
+                    <div class="reminder-content">
+                        <strong>蘭陽院區 - 內科第一診間</strong><br>
+                        <span class="reminder-doctor">林小明 醫師</span> (上午診)<br>
+                        掛號序號：<strong style="color: #008080;">30 號</strong> | 報到時間：09:30 AM
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Register Step 1 (Select Department) -->
+            <div class="app-content app-view" id="viewRegisterStep1">
+                <div class="view-title">
+                    <button class="back-btn" onclick="navTo('viewHome')" data-voice="返回首頁按鈕。Back to Home.">&lt; 返回</button>
+                    <span>掛號 Step 1: 選擇科別</span>
+                </div>
+                
+                <div class="step-bar">
+                    <span class="step-item active">1. 選科別</span>
+                    <span class="step-item">2. 選醫師</span>
+                    <span class="step-item">3. 填資料</span>
+                </div>
+
+                <div class="list-item-card" onclick="navTo('viewRegisterStep2')" data-voice="小兒科，點擊後進入醫師選擇。Pediatrics department. Double tap to select.">
+                    <div class="list-item-left">
+                        <div class="list-item-title">小兒科 (Pediatrics)</div>
+                        <div class="list-item-subtitle">感冒、過敏、小兒健檢、疫苗注射</div>
+                    </div>
+                    <div class="list-item-badge">蘭陽/新民</div>
+                </div>
+
+                <div class="list-item-card" onclick="showToast('本門診今日已額滿')" data-voice="一般內科。Internal Medicine department. Out of service today.">
+                    <div class="list-item-left">
+                        <div class="list-item-title">一般內科 (Internal Medicine)</div>
+                        <div class="list-item-subtitle">高血壓、糖尿病、一般慢性病</div>
+                    </div>
+                    <div class="list-item-badge">蘭陽院區</div>
+                </div>
+
+                <div class="list-item-card" onclick="showToast('正在取得外科醫師班表...')" data-voice="一般外科。General Surgery department. Double tap to check.">
+                    <div class="list-item-left">
+                        <div class="list-item-title">一般外科 (General Surgery)</div>
+                        <div class="list-item-subtitle">外傷處理、皮膚腫瘤、微創手術</div>
+                    </div>
+                    <div class="list-item-badge">蘭陽院區</div>
+                </div>
+            </div>
+
+            <!-- View 3: Register Step 2 (Select Doctor) -->
+            <div class="app-content app-view" id="viewRegisterStep2">
+                <div class="view-title">
+                    <button class="back-btn" onclick="navTo('viewRegisterStep1')" data-voice="返回科別選取按鈕。Back to Step 1.">&lt; 返回</button>
+                    <span>掛號 Step 2: 選擇醫師</span>
+                </div>
+
+                <div class="step-bar">
+                    <span class="step-item">1. 選科別</span>
+                    <span class="step-item active">2. 選醫師</span>
+                    <span class="step-item">3. 填資料</span>
+                </div>
+
+                <!-- Doctor Card -->
+                <div class="list-item-card" onclick="navTo('viewRegisterStep3')" data-voice="林小明主任醫師，專長小兒過敏與氣喘。看診日期：明日上午診，狀態為可掛號。林醫師小兒科診卡片，雙擊選取。">
+                    <div class="list-item-left">
+                        <div class="list-item-title" style="color:#002d62; font-size:15px;">林小明 醫師 (主任)</div>
+                        <div class="list-item-subtitle" style="margin-top:2px;">專長：小兒氣喘、過敏、小兒急重症</div>
+                        <div class="list-item-subtitle" style="color:#008080; font-weight:bold; margin-top:2px;">看診時段：明日上午 (週一)</div>
+                    </div>
+                    <div class="list-item-badge">可掛號</div>
+                </div>
+
+                <div class="list-item-card" onclick="showToast('該門診已滿診')" data-voice="陳大華醫師，專長小兒心臟科，門診已滿診。">
+                    <div class="list-item-left">
+                        <div class="list-item-title">陳大華 醫師</div>
+                        <div class="list-item-subtitle">專長：小兒心臟、一般兒科</div>
+                        <div class="list-item-subtitle" style="margin-top:2px;">看診時段：明日下午 (週一)</div>
+                    </div>
+                    <div class="list-item-badge" style="background-color:#eef2f6; color:#999;">滿診</div>
+                </div>
+            </div>
+
+            <!-- View 4: Register Step 3 (Confirm booking information) -->
+            <div class="app-content app-view" id="viewRegisterStep3">
+                <div class="view-title">
+                    <button class="back-btn" onclick="navTo('viewRegisterStep2')" data-voice="返回醫師選取按鈕。Back to Step 2.">&lt; 返回</button>
+                    <span>掛號 Step 3: 確認掛號資訊</span>
+                </div>
+
+                <div class="step-bar">
+                    <span class="step-item">1. 選科別</span>
+                    <span class="step-item">2. 選醫師</span>
+                    <span class="step-item active">3. 填資料</span>
+                </div>
+
+                <div class="confirm-box">
+                    <div class="confirm-row">
+                        <span>掛號科別</span>
+                        <span class="confirm-row-val">小兒科</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span>看診醫生</span>
+                        <span class="confirm-row-val">林小明 醫師</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span>看診院區</span>
+                        <span class="confirm-row-val highlight-campus" id="lblCampusConfirm">蘭陽院區 (校舍路)</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span>門診時間</span>
+                        <span class="confirm-row-val">2026-08-17 (週一上午)</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span>就醫身分</span>
+                        <span class="confirm-row-val">林大同 (複診-1980/01/01)</span>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="submitBooking()" data-voice="確認預約掛號按鈕，點擊後即送出掛號申請。Confirm Booking Button. Double tap to submit.">確認預約掛號</button>
+            </div>
+
+            <!-- View 5: Clinic progress view -->
+            <div class="app-content app-view" id="viewQueue">
+                <div class="view-title">
+                    <button class="back-btn" onclick="navTo('viewHome')" data-voice="返回首頁按鈕。Back to Home.">&lt; 返回</button>
+                    <span>即時看診進度</span>
+                </div>
+
+                <!-- Call Queue Header Card -->
+                <div class="queue-header-card" id="queueCard" data-voice="門診叫號進度：第一診間小兒科林小明醫師。目前現場叫號二十五號。您的預約號碼是三十號。預估還需等候五個人，大約二十分鐘。">
+                    <div class="queue-room" id="lblQueueRoom">蘭陽院區 - 兒科第一診</div>
+                    <div style="font-weight:bold; font-size: 16px;">林小明 醫師 (上午診)</div>
+                    <div class="queue-number-display" id="queueNumber">25</div>
+                    <div class="queue-your-number">您的號碼：30 號</div>
+                    <div class="queue-wait-time" id="queueWaitText">⏱️ 預估還需等候 5 人，約 20 分鐘</div>
+                </div>
+
+                <!-- Push Notification setting -->
+                <div class="switch-row" data-voice="叫號進度推播提醒設定，目前已關閉按鈕。Push notification settings. Currently disabled. Double tap to toggle.">
+                    <span>🔔 叫號進度主動推播 (前5號提醒)</span>
+                    <label class="switch">
+                        <input type="checkbox" id="chkPush" onchange="togglePushAlert(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Bottom tab navigation mockup -->
+            <div class="bottom-nav">
+                <button class="nav-item active" onclick="navTo('viewHome')" data-voice="首頁分頁標籤，已選取。Home tab selected.">
+                    <div class="nav-item-icon">🏠</div>
+                    <div>首頁</div>
+                </button>
+                <button class="nav-item" onclick="navTo('viewRegisterStep1')" data-voice="網路掛號分頁標籤。Register tab. Double tap to switch.">
+                    <div class="nav-item-icon">📅</div>
+                    <div>掛號</div>
+                </button>
+                <button class="nav-item" onclick="navTo('viewQueue')" data-voice="看診進度分頁標籤。Queue tab. Double tap to switch.">
+                    <div class="nav-item-icon">⏱️</div>
+                    <div>進度</div>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Right side: Accessibility simulator and control panel -->
+    <div class="control-panel">
+        <h2 style="font-size: 18px; color: #002d62; border-bottom: 2px solid #008080; padding-bottom: 8px;">
+            陽交附醫 App 無障礙優規展示控制台
+        </h2>
+        
+        <!-- Theme Controls -->
+        <div class="panel-section">
+            <div class="panel-title">🎨 介面輔助展示切換 (Aesthetics & Accessibility)</div>
+            <div class="control-btn-group">
+                <button class="control-btn" id="btnContrast" onclick="toggleContrast()">🌓 啟用高對比黑底黃字</button>
+                <button class="control-btn" id="btnFont" onclick="toggleFont()">🔎 大字級閱讀模式</button>
+            </div>
+        </div>
+
+        <!-- Simulated VoiceOver Output Box -->
+        <div class="panel-section">
+            <div class="panel-title">🔊 螢幕閱讀器模擬器 (VoiceOver / TalkBack Simulator)</div>
+            <p style="font-size: 11.5px; color: #666;">
+                ※ 將滑鼠移至 App 介面上之任何按鈕或卡片上，或在手機點按，右側模擬器將以<strong>使用者導向</strong>的語音朗讀該元件的「語意標籤」，並可點擊播放語音聽取實際播報效果。
+            </p>
+            <div class="voice-output-box">
+                <div class="voice-label" id="voiceType">無障礙語意標籤輸出</div>
+                <div class="voice-text" id="voiceOutput">請指觸 App 介面上的元件或按鈕來朗讀...</div>
+                <button class="control-btn" style="position: absolute; bottom: 8px; right: 8px; width: auto; font-size: 11px; padding: 4px 8px;" onclick="speakCurrentText()">🔊 語音播放</button>
+            </div>
+        </div>
+
+        <!-- Simulation controls for Clinic Queue update -->
+        <div class="panel-section">
+            <div class="panel-title">⏱️ 診間叫號動態變更模擬 (Live Announcement Simulator)</div>
+            <p style="font-size: 11.5px; color: #666;">
+                點選下方模擬按鈕，系統將動態更新叫號號碼，並測試無障礙的「動態語音主動提示」效果：
+            </p>
+            <div class="control-btn-group">
+                <button class="control-btn" style="background-color: #008080; color: white;" onclick="simulateQueueChange(1)">現場叫號跳至 26 號</button>
+                <button class="control-btn" style="background-color: #e06666; color: white;" onclick="simulateQueueChange(5)">過號通知 (叫號跳至 29 號)</button>
+            </div>
+        </div>
+        
+        <div class="panel-section" style="font-size: 12px; color: #555; background-color: #f7f9fc; padding: 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.04);">
+            <strong>無障礙成果體驗提示：</strong>
+            <ul style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+                <li><strong>雙院區防錯指引</strong>：在掛號 Step 3 頁面，系統會以醒目對比字體提醒預約院區。</li>
+                <li><strong>觸控目標大尺寸</strong>：所有按鈕觸控區完全大於 44 x 44 像素，保留安全邊距。</li>
+                <li><strong>即時朗讀整合</strong>：觸摸醫生或叫號卡片時，語意標籤將相關就醫資料整合為一段流暢語音導讀，免去逐字點按之苦。</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentCampus = 'lan';
+    let isContrast = false;
+    let isLargeFont = false;
+    let synth = window.speechSynthesis;
+
+    // View Navigation
+    function navTo(viewId) {
+        // Hide all views
+        document.querySelectorAll('.app-view').forEach(view => {
+            view.classList.remove('active');
+        });
+        // Show target view
+        document.getElementById(viewId).classList.add('active');
+        
+        // De-active bottom nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Active correspond bottom tab
+        if(viewId === 'viewHome') {
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        } else if(viewId.startsWith('viewRegister')) {
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+        } else if(viewId === 'viewQueue') {
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+        }
+        
+        // Speak current view title
+        let titleNode = document.getElementById(viewId).querySelector('.view-title');
+        let titleText = titleNode ? titleNode.innerText : "陽交大附醫首頁";
+        speak("進入頁面：" + titleText);
+    }
+
+    // Geolocation and Campus Switcher
+    function switchCampus(campus) {
+        currentCampus = campus;
+        let btnLan = document.getElementById('btnLan');
+        let btnXin = document.getElementById('btnXin');
+        let lblConfirm = document.getElementById('lblCampusConfirm');
+        let lblQueueRoom = document.getElementById('lblQueueRoom');
+        
+        if (campus === 'lan') {
+            btnLan.classList.add('active');
+            btnXin.classList.remove('active');
+            lblConfirm.innerText = "蘭陽院區 (校舍路)";
+            lblConfirm.classList.remove('highlight-campus');
+            lblQueueRoom.innerText = "蘭陽院區 - 兒科第一診";
+            document.getElementById('geoBanner').innerHTML = "📍 智慧指引：偵測距離您最近為<strong>蘭陽院區</strong>";
+            speak("已為您切換至 蘭陽院區 門診及掛號介面");
+        } else {
+            btnLan.classList.remove('active');
+            btnXin.classList.add('active');
+            lblConfirm.innerText = "新民院區 (新民路) ★請注意勿跑錯院區";
+            lblConfirm.classList.add('highlight-campus');
+            lblQueueRoom.innerText = "新民院區 - 兒科第三診";
+            document.getElementById('geoBanner').innerHTML = "📍 智慧指引：偵測距離您最近為<strong>新民院區</strong>";
+            speak("已為您切換至 新民院區 門診及掛號介面");
+        }
+    }
+
+    // High Contrast Mode toggle
+    function toggleContrast() {
+        isContrast = !isContrast;
+        let btn = document.getElementById('btnContrast');
+        if (isContrast) {
+            document.body.classList.add('high-contrast');
+            btn.classList.add('active');
+            btn.innerText = "🌓 已啟用高對比模式";
+            speak("已為您啟用高對比黑底黃字閱讀模式");
+        } else {
+            document.body.classList.remove('high-contrast');
+            btn.classList.remove('active');
+            btn.innerText = "🌓 啟用高對比黑底黃字";
+            speak("已關閉高對比模式，恢復一般色彩版面");
+        }
+    }
+
+    // Large Font Size toggle
+    function toggleFont() {
+        isLargeFont = !isLargeFont;
+        let btn = document.getElementById('btnFont');
+        let app = document.getElementById('appScreen');
+        if (isLargeFont) {
+            app.classList.add('fontsize-large');
+            btn.classList.add('active');
+            btn.innerText = "🔎 已啟用大字級模式";
+            speak("已為您啟用大字級版面，文字與按鈕尺寸已放大百分之三十。");
+        } else {
+            app.classList.remove('fontsize-large');
+            btn.classList.remove('active');
+            btn.innerText = "🔎 大字級閱讀模式";
+            speak("已恢復標準字級大小。");
+        }
+    }
+
+    // Toast notifications
+    function showToast(msg) {
+        let toast = document.getElementById('toastMessage');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        speak("提示彈窗訊息：" + msg);
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    // Submit Booking mock
+    function submitBooking() {
+        showToast("掛號成功！預約看診號為：30 號。已加入您的就醫行程備忘。");
+        setTimeout(() => {
+            navTo('viewHome');
+        }, 1500);
+    }
+
+    // Toggle push alerts
+    function togglePushAlert(cb) {
+        if(cb.checked) {
+            speak("已為您開啟進度推播，當叫號到達前五號時，系統將主動發送語音與震動推播提醒您。");
+        } else {
+            speak("已關閉進度主動推播。");
+        }
+    }
+
+    // Simulate Clinic queue changes
+    function simulateQueueChange(steps) {
+        let qNumNode = document.getElementById('queueNumber');
+        let currentNum = parseInt(qNumNode.innerText);
+        let nextNum = currentNum + steps;
+        qNumNode.innerText = nextNum;
+        
+        let waitPeople = 30 - nextNum;
+        let waitTime = waitPeople * 4;
+        let waitTextNode = document.getElementById('queueWaitText');
+        
+        if (waitPeople <= 0) {
+            waitTextNode.innerText = "⚠️ 輪到您看診！請立即進入診間！";
+            document.getElementById('queueCard').setAttribute('data-voice', '診間廣播提醒：輪到您看診！請立即進入小兒科第一診間林小明醫師門診看診。');
+            speak("動態廣播通知：輪到您看診，請立即進入診間！");
+        } else {
+            waitTextNode.innerText = "⏱️ 預估還需等候 " + waitPeople + " 人，約 " + waitTime + " 分鐘";
+            let newVoice = "動態系統公告：兒科第一診林小明醫師，目前叫號更新為 " + nextNum + " 號。您還需要等候 " + waitPeople + " 人，預估等候時間為 " + waitTime + " 分鐘。";
+            document.getElementById('queueCard').setAttribute('data-voice', newVoice);
+            speak("系統公告更新：" + nextNum + "號");
+        }
+    }
+
+    // Text to Speech logic
+    function speak(text) {
+        if (synth) {
+            // Cancel current speaking
+            synth.cancel();
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-TW';
+            synth.speak(utterance);
+        }
+        document.getElementById('voiceType').innerText = "🔊 語音朗讀中...";
+        document.getElementById('voiceOutput').innerText = text;
+    }
+
+    function speakCurrentText() {
+        let text = document.getElementById('voiceOutput').innerText;
+        speak(text);
+    }
+
+    // Hover/Focus VoiceOver emulation for all app elements
+    document.querySelectorAll('[data-voice]').forEach(elem => {
+        // Desktop mouse hover simulator
+        elem.addEventListener('mouseenter', () => {
+            let label = elem.getAttribute('data-voice');
+            document.getElementById('voiceType').innerText = "無障礙語意標籤 (VoiceOver)";
+            document.getElementById('voiceOutput').innerText = label;
+            elem.classList.add('focused-element');
+        });
+        
+        elem.addEventListener('mouseleave', () => {
+            elem.classList.remove('focused-element');
+        });
+
+        // Mobile touch focus simulator
+        elem.addEventListener('click', (e) => {
+            let label = elem.getAttribute('data-voice');
+            document.getElementById('voiceType').innerText = "無障礙語意標籤 (VoiceOver)";
+            document.getElementById('voiceOutput').innerText = label;
+            // Highlight element visually
+            document.querySelectorAll('[data-voice]').forEach(n => n.classList.remove('focused-element'));
+            elem.classList.add('focused-element');
+        });
+    });
+
+</script>
+</body>
+</html>
