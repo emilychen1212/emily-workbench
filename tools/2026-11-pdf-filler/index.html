@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF 快填工具</title>
+<meta name="description" content="用按鈕在 PDF 上蓋字、打勾">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+  // Opened as a local file (double-clicked): browsers may refuse to start a background worker
+  // from a web address, so load the PDF engine directly into the page instead.
+  if (location.protocol === 'file:') document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"><\/script>');
+</script>
+<style>
+  :root {
+    --bg: #eef0f3; --panel: #ffffff; --line: #d8dce2; --text: #1f2937; --muted: #6b7280;
+    --accent: #2563eb; --accent-soft: #e0e9ff; --danger: #dc2626;
+    --font: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); color: var(--text); background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; gap: 8px; align-items: center; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0 12px 0 0; }
+  button { font: inherit; font-size: 13px; padding: 6px 12px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; color: var(--text); }
+  button:hover { background: #f5f7fa; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .45; cursor: default; }
+  #fileName { color: var(--muted); font-size: 13px; }
+  #status { margin-left: auto; font-size: 13px; color: var(--muted); }
+  #status.placing { color: var(--accent); font-weight: 600; }
+  main { flex: 1; display: flex; min-height: 0; }
+  aside { width: 240px; background: var(--panel); border-right: 1px solid var(--line); padding: 12px; overflow-y: auto; flex-shrink: 0; }
+  aside h2 { font-size: 13px; color: var(--muted); margin: 4px 0 8px; font-weight: 600; }
+  .presets { display: flex; flex-direction: column; gap: 6px; }
+  .preset { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .preset.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .preset .use { flex: 1; min-width: 0; text-align: left; border: 0; border-radius: 0; padding: 8px 10px; }
+  .preset .use small { display: block; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preset .use span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preset .edit { flex: 0 0 34px; width: 34px; padding: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0; color: var(--muted); }
+  .side-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .side-actions button { font-size: 12px; padding: 5px 8px; }
+  .preset .grip { display: flex; align-items: center; padding: 0 2px 0 6px; color: #b0b6c0; cursor: grab; user-select: none; font-size: 14px; }
+  .preset .grip:hover { color: var(--accent); }
+  .preset.dragging { opacity: .4; }
+  .preset.drop-before { box-shadow: 0 -3px 0 var(--accent); }
+  .preset.drop-after { box-shadow: 0 3px 0 var(--accent); }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .hint kbd { background: #f1f3f6; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-size: 11px; }
+  #viewer { flex: 1; overflow: auto; padding: 20px; }
+  #pages { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .page { position: relative; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+  .page canvas { display: block; }
+  .page.placing { cursor: crosshair; }
+  .empty { text-align: center; color: var(--muted); margin-top: 18vh; font-size: 15px; line-height: 2; }
+  .empty.drag { color: var(--accent); }
+  .item { position: absolute; outline: 1px dashed transparent; }
+  .item:hover, .item.selected { outline-color: var(--accent); }
+  .item .content { white-space: pre; line-height: 1.2; outline: none; min-width: 1em; color: #000; font-family: var(--font); cursor: text; }
+  .item .content.wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .item .resize { position: absolute; right: -6px; top: 0; bottom: 0; width: 10px; cursor: ew-resize; display: none; }
+  .item .resize::after { content: ''; position: absolute; left: 3px; top: 50%; height: 14px; max-height: 100%; transform: translateY(-50%); width: 4px; border-radius: 2px; background: var(--accent); }
+  .item:hover .resize, .item.selected .resize { display: block; }
+  .item .bar { position: absolute; bottom: 100%; left: -1px; display: none; gap: 2px; white-space: nowrap; width: max-content; z-index: 2; background: var(--accent); border-radius: 4px 4px 0 0; padding: 1px 3px; }
+  .item.selected .bar, .item:hover .bar { display: flex; }
+  .item .bar span { color: #fff; font-size: 11px; padding: 0 4px; cursor: pointer; user-select: none; line-height: 18px; }
+  .item .bar .drag { cursor: move; }
+  dialog { border: 1px solid var(--line); border-radius: 10px; padding: 18px; width: 340px; font-family: var(--font); }
+  dialog label { display: block; font-size: 13px; margin: 10px 0 4px; color: var(--muted); }
+  dialog input, dialog textarea { width: 100%; font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+  dialog textarea { height: 80px; resize: vertical; }
+  dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  dialog .row .del { margin-right: auto; color: var(--danger); }
+  dialog p.tip { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+  @media (max-width: 700px) { aside { width: 180px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>📝 PDF 快填工具</h1>
+  <button id="btnOpen" class="primary">開啟 PDF</button>
+  <button id="btnSave" disabled title="直接寫回原本的檔案">儲存（覆寫原檔）</button>
+  <button id="btnSaveAs" disabled>另存新檔</button>
+  <button id="zoomOut" disabled>－</button>
+  <span id="zoomLabel" style="font-size:13px">100%</span>
+  <button id="zoomIn" disabled>＋</button>
+  <span id="fileName"></span>
+  <span id="status"></span>
+  <input type="file" id="fileInput" accept="application/pdf" hidden>
+  <input type="file" id="importInput" accept="application/json" hidden>
+</header>
+<main>
+  <aside>
+    <h2>快捷按鈕（點一下，再點 PDF 上的位置）</h2>
+    <div class="presets" id="presetList"></div>
+    <div class="side-actions">
+      <button id="btnAddPreset">＋ 新增按鈕</button>
+      <button id="btnExport">匯出設定</button>
+      <button id="btnImport">匯入設定</button>
+    </div>
+    <div class="hint">
+      • 選了按鈕後可連續點多個位置，按 <kbd>Esc</kbd> 結束<br>
+      • 拖曳藍色 <b>⠿</b> 移動位置<br>
+      • 拖曳按鈕左邊的灰色 <b>⠿</b> 調整按鈕順序<br>
+      • <b>A－ / A＋</b> 調整字級，<b>✕</b> 刪除<br>
+      • 拖曳文字框<b>右邊的藍色小條</b>調整寬度，太長會自動換行（雙擊恢復）<br>
+      • 點文字可直接修改<br>
+      • 文字內可用 <code>{today}</code>（2026/11/19）<br>
+      &nbsp;&nbsp;或 <code>{roc}</code>（115年11月19日）
+    </div>
+  </aside>
+  <div id="viewer">
+    <div id="pages"><div class="empty" id="empty">點「開啟 PDF」或把 PDF 拖進來<br><small>檔案只在你的電腦上處理，不會上傳</small></div></div>
+  </div>
+</main>
+
+<dialog id="presetDialog">
+  <form method="dialog" id="presetForm">
+    <b id="dlgTitle">新增按鈕</b>
+    <label>按鈕名稱</label>
+    <input id="pLabel" required placeholder="例如：公司名稱">
+    <label>要填入的內容（可多行）</label>
+    <textarea id="pText" required placeholder="例如：飛資得醫學資訊股份有限公司"></textarea>
+    <label>字級（pt）</label>
+    <input id="pSize" type="number" min="5" max="72" step="0.5" value="11">
+    <p class="tip">{today} → 西元日期、{roc} → 民國日期</p>
+    <div class="row">
+      <button type="button" class="del" id="pDelete">刪除</button>
+      <button type="button" id="pCancel">取消</button>
+      <button type="submit" class="primary">儲存</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const FONT = getComputedStyle(document.documentElement).getPropertyValue('--font').trim();
+const STORE_KEY = 'pdfFiller.presets.v1';
+const DEFAULT_PRESETS = [
+  { label: '✓ 打勾', text: '✓', size: 14 },
+  { label: '✗ 打叉', text: '✗', size: 14 },
+  { label: '● 實心圈', text: '●', size: 10 },
+  { label: '今天日期', text: '{today}', size: 11 },
+  { label: '民國日期', text: '{roc}', size: 11 },
+  { label: '公司名稱', text: '（請按 ✎ 改成你的公司名稱）', size: 11 },
+  { label: '聯絡人', text: '（請按 ✎ 改成聯絡人姓名）', size: 11 },
+  { label: '地址', text: '（請按 ✎ 改成地址）', size: 11 },
+  { label: '電話 / Email', text: '（請按 ✎ 改成電話）', size: 11 },
+  { label: '空白文字框', text: '', size: 11 },
+];
+
+let presets = loadPresets();
+let pdfBytes = null;      // original bytes (never mutated)
+let pdfDoc = null;        // pdf.js document
+let fileHandle = null;    // File System Access handle (for overwrite)
+let fileNameStr = 'document.pdf';
+let scale = 1.25;
+let pageViews = [];       // [{div, viewport, pdfW, pdfH}]
+let items = [];           // [{id, page, x, y, size, el}]  x,y in PDF points from top-left
+let placing = null;       // preset index
+let selected = null;
+let dirty = false;
+
+const $ = id => document.getElementById(id);
+
+// ---------- presets ----------
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function withIds(list) { return list.map(p => ({ ...p, id: p.id || newId() })); }
+function loadPresets() {
+  try { const s = JSON.parse(localStorage.getItem(STORE_KEY)); if (Array.isArray(s)) return withIds(s); } catch (e) {}
+  return withIds(DEFAULT_PRESETS);
+}
+function savePresets() { try { localStorage.setItem(STORE_KEY, JSON.stringify(presets)); } catch (e) {} }
+
+
+function expand(text) {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return text
+    .replace(/\{today\}/g, `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())}`)
+    .replace(/\{roc\}/g, `${d.getFullYear() - 1911}年${d.getMonth() + 1}月${d.getDate()}日`);
+}
+
+function renderPresets() {
+  const list = $('presetList');
+  list.innerHTML = '';
+  presets.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'preset' + (placing === i ? ' active' : '');
+    const grip = document.createElement('span');
+    grip.className = 'grip'; grip.textContent = '⠿'; grip.title = '拖曳調整順序';
+    grip.addEventListener('mousedown', () => { row.draggable = true; });
+    row.addEventListener('dragstart', e => { dragFrom = i; row.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); });
+    row.addEventListener('dragend', () => { row.draggable = false; dragFrom = null; renderPresets(); });
+    row.addEventListener('dragover', e => {
+      if (dragFrom == null) return;
+      e.preventDefault(); e.stopPropagation();
+      const after = isLowerHalf(e, row);
+      row.classList.toggle('drop-before', !after); row.classList.toggle('drop-after', after);
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drop-before', 'drop-after'));
+    row.addEventListener('drop', e => {
+      if (dragFrom == null) return;
+      e.preventDefault(); e.stopPropagation();
+      const after = isLowerHalf(e, row);
+      movePreset(dragFrom, i + (after ? 1 : 0));
+    });
+    row.append(grip);
+    const use = document.createElement('button');
+    use.className = 'use';
+    use.innerHTML = `<span></span><small></small>`;
+    use.firstChild.textContent = p.label;
+    use.lastChild.textContent = expand(p.text).replace(/\n/g, ' ⏎ ') || '（自己輸入）';
+    use.addEventListener('click', () => setPlacing(placing === i ? null : i));
+    const edit = document.createElement('button');
+    edit.className = 'edit'; edit.textContent = '✎'; edit.title = '編輯這個按鈕';
+    edit.addEventListener('click', () => openPresetDialog(i));
+    row.append(use, edit);
+    list.append(row);
+  });
+}
+
+let dragFrom = null;
+function isLowerHalf(e, row) { const r = row.getBoundingClientRect(); return e.clientY > r.top + r.height / 2; }
+function movePreset(from, to) {
+  const placingId = placing != null ? presets[placing].id : null;
+  const [p] = presets.splice(from, 1);
+  if (to > from) to--;
+  presets.splice(to, 0, p);
+  if (placingId) placing = presets.findIndex(x => x.id === placingId);
+  savePresets(); renderPresets();
+}
+
+let editingIndex = null;
+function openPresetDialog(i) {
+  editingIndex = i;
+  const p = i == null ? { label: '', text: '', size: 11 } : presets[i];
+  $('dlgTitle').textContent = i == null ? '新增按鈕' : '編輯按鈕';
+  $('pLabel').value = p.label; $('pText').value = p.text; $('pSize').value = p.size;
+  $('pDelete').style.display = i == null ? 'none' : '';
+  $('pText').required = false;
+  $('presetDialog').showModal();
+}
+$('presetForm').addEventListener('submit', () => {
+  const p = { label: $('pLabel').value.trim(), text: $('pText').value, size: parseFloat($('pSize').value) || 11 };
+  if (editingIndex == null) presets.push(p); else presets[editingIndex] = p;
+  savePresets(); renderPresets();
+});
+$('pCancel').addEventListener('click', () => $('presetDialog').close());
+$('pDelete').addEventListener('click', () => {
+  if (!confirm(`確定刪除「${presets[editingIndex].label}」這個按鈕？`)) return;
+  presets.splice(editingIndex, 1);
+  if (placing === editingIndex) placing = null;
+  savePresets(); renderPresets(); $('presetDialog').close();
+});
+$('btnAddPreset').addEventListener('click', () => openPresetDialog(null));
+$('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(presets, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PDF快填按鈕設定.json'; a.click();
+});
+$('btnImport').addEventListener('click', () => $('importInput').click());
+$('importInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const raw = JSON.parse(await f.text());
+    const pList = Array.isArray(raw) ? raw : raw && raw.presets;
+    if (!Array.isArray(pList)) throw 0;
+    presets = withIds(pList.filter(p => p && typeof p.label === 'string').map(p => ({ id: p.id, label: p.label, text: String(p.text ?? ''), size: +p.size || 11 })));
+    savePresets(); renderPresets();
+    alert(`已匯入 ${presets.length} 個按鈕`);
+  } catch (err) { alert('檔案格式不正確'); }
+  e.target.value = '';
+});
+
+function setPlacing(i) {
+  placing = i;
+  renderPresets();
+  pageViews.forEach(v => v.div.classList.toggle('placing', i != null));
+  const st = $('status');
+  if (i != null) { st.textContent = `放置中：${presets[i].label}（點 PDF 上的位置，Esc 結束）`; st.className = 'placing'; }
+  else { st.textContent = dirty ? '有未儲存的變更' : ''; st.className = ''; }
+}
+
+// ---------- open ----------
+$('btnOpen').addEventListener('click', openFile);
+async function openFile() {
+  if (dirty && !confirm('目前的變更還沒儲存，確定要開啟其他檔案？')) return;
+  if (window.showOpenFilePicker) {
+    try {
+      const [h] = await showOpenFilePicker({ types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }] });
+      fileHandle = h;
+      const f = await h.getFile();
+      await loadPdf(new Uint8Array(await f.arrayBuffer()), f.name);
+    } catch (e) { if (e.name !== 'AbortError') alert('開啟失敗：' + e.message); }
+  } else {
+    $('fileInput').click();
+  }
+}
+$('fileInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  fileHandle = null;
+  await loadPdf(new Uint8Array(await f.arrayBuffer()), f.name);
+  e.target.value = '';
+});
+// drag & drop
+$('viewer').addEventListener('dragover', e => { e.preventDefault(); $('empty')?.classList.add('drag'); });
+$('viewer').addEventListener('dragleave', () => $('empty')?.classList.remove('drag'));
+$('viewer').addEventListener('drop', async e => {
+  e.preventDefault();
+  const items0 = [...e.dataTransfer.items];
+  if (dirty && !confirm('目前的變更還沒儲存，確定要開啟其他檔案？')) return;
+  const it = items0.find(x => x.kind === 'file');
+  if (!it) return;
+  // grab everything synchronously: the drop data is cleared after the first await
+  const f = it.getAsFile();
+  const hp = it.getAsFileSystemHandle ? it.getAsFileSystemHandle().catch(() => null) : Promise.resolve(null);
+  $('empty')?.classList.remove('drag');
+  if (!f || !/\.pdf$/i.test(f.name)) { alert('請拖入 PDF 檔'); return; }
+  const h = await hp;
+  fileHandle = h && h.kind === 'file' ? h : null;
+  await loadPdf(new Uint8Array(await f.arrayBuffer()), f.name);
+});
+
+async function loadPdf(bytes, name) {
+  let restored = null;
+  try {
+    const r = await extractEditData(bytes);
+    if (r) { bytes = r.clean; restored = r.items; }
+  } catch (e) { console.warn('無法還原可編輯內容，改用原檔顯示', e); restored = null; }
+  try {
+    pdfBytes = bytes.slice();
+    pdfDoc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  } catch (e) { alert('無法讀取這個 PDF：' + e.message); return; }
+  fileNameStr = name;
+  items = []; selected = null; dirty = false;
+  $('fileName').textContent = name + (fileHandle ? '' : '（儲存時會另存新檔）');
+  $('btnSave').disabled = !fileHandle;
+  $('btnSaveAs').disabled = false;
+  $('zoomIn').disabled = $('zoomOut').disabled = false;
+  await renderPages();
+  if (restored) {
+    restored.forEach(d => { if (d.page < pageViews.length) addItem(d.page, d.x, d.y, d.text, d.size, false, d); });
+  }
+  setPlacing(placing);
+  if (restored && restored.length) $('status').textContent = `已載入之前填的 ${restored.length} 個項目，可以繼續修改`;
+}
+
+// ---------- keep filled items editable after saving ----------
+// On save we record which content streams / images we added, plus the items themselves,
+// in a private key of the PDF catalog. On reopen we strip exactly those additions
+// (giving back the untouched original) and recreate the items as editable boxes.
+const DATA_KEY = 'PdfFillerData';
+function contentRefs(page) {
+  const c = page.node.get(PDFLib.PDFName.of('Contents'));
+  if (c instanceof PDFLib.PDFArray) return c.asArray().map(String);
+  return c ? [String(c)] : [];
+}
+function xobjectNames(page) {
+  const res = page.node.Resources();
+  const xo = res && res.lookup(PDFLib.PDFName.of('XObject'));
+  return xo instanceof PDFLib.PDFDict ? xo.keys().map(k => k.asString().replace(/^\//, '')) : [];
+}
+async function extractEditData(bytes) {
+  const doc = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+  const raw = doc.catalog.lookup(PDFLib.PDFName.of(DATA_KEY));
+  if (!raw || !raw.decodeText) return null;
+  const data = JSON.parse(raw.decodeText());
+  const pages = doc.getPages();
+  // validate first: every recorded stream must still be on its page, otherwise the file was
+  // rewritten by another program and we leave it as it is
+  for (const s of data.stamps || []) {
+    const page = pages[s.page];
+    if (!page) return null;
+    const have = contentRefs(page);
+    if (!s.refs.every(r => have.includes(r))) return null;
+  }
+  for (const s of data.stamps || []) {
+    const page = pages[s.page];
+    const arr = page.node.get(PDFLib.PDFName.of('Contents'));
+    const drop = new Set(s.refs);
+    const keep = (arr instanceof PDFLib.PDFArray ? arr.asArray() : [arr]).filter(r => !drop.has(String(r)));
+    page.node.set(PDFLib.PDFName.of('Contents'), doc.context.obj(keep));
+    const xo = page.node.Resources()?.lookup(PDFLib.PDFName.of('XObject'));
+    if (xo instanceof PDFLib.PDFDict) {
+      for (const n0 of s.xobjects || []) {
+        const n = n0.replace(/^\//, '');
+        const ref = xo.get(PDFLib.PDFName.of(n));
+        xo.delete(PDFLib.PDFName.of(n));
+        if (ref instanceof PDFLib.PDFRef) {
+          const img = doc.context.lookup(ref);
+          const smask = img && img.dict && img.dict.get(PDFLib.PDFName.of('SMask'));
+          if (smask instanceof PDFLib.PDFRef) doc.context.delete(smask); // the PNG's transparency layer
+          doc.context.delete(ref);
+        }
+      }
+    }
+    s.refs.forEach(r => { const [num, gen] = r.split(' '); doc.context.delete(PDFLib.PDFRef.of(+num, +gen)); });
+  }
+  doc.catalog.delete(PDFLib.PDFName.of(DATA_KEY));
+  const clean = await doc.save({ updateFieldAppearances: false });
+  return { clean: new Uint8Array(clean), items: Array.isArray(data.items) ? data.items : [] };
+}
+
+async function renderPages() {
+  const wrap = $('pages');
+  const keep = items.map(it => ({ ...it, text: it.el.querySelector('.content').innerText.replace(/\n$/, '') }));
+  wrap.innerHTML = '';
+  pageViews = [];
+  const dpr = window.devicePixelRatio || 1;
+  for (let n = 1; n <= pdfDoc.numPages; n++) {
+    const page = await pdfDoc.getPage(n);
+    const viewport = page.getViewport({ scale });
+    const base = page.getViewport({ scale: 1 });
+    const div = document.createElement('div');
+    div.className = 'page' + (placing != null ? ' placing' : '');
+    div.style.width = viewport.width + 'px'; div.style.height = viewport.height + 'px';
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(viewport.width * dpr); canvas.height = Math.floor(viewport.height * dpr);
+    canvas.style.width = viewport.width + 'px'; canvas.style.height = viewport.height + 'px';
+    div.append(canvas);
+    wrap.append(div);
+    const idx = n - 1;
+    div.addEventListener('mousedown', e => onPageClick(e, idx));
+    pageViews.push({ div, viewport, base, rotate: page.rotate });
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null }).promise;
+  }
+  items = [];
+  keep.forEach(k => addItem(k.page, k.x, k.y, k.text, k.size, false, { w: k.w, presetId: k.presetId, rawText: k.rawText, placedText: k.placedText }));
+  $('zoomLabel').textContent = Math.round(scale / 1.25 * 100) + '%';
+}
+
+$('zoomIn').addEventListener('click', () => { scale = Math.min(scale * 1.2, 5); renderPages(); });
+$('zoomOut').addEventListener('click', () => { scale = Math.max(scale / 1.2, 0.4); renderPages(); });
+
+// ---------- items ----------
+function onPageClick(e, pageIdx) {
+  if (e.target.closest('.item')) return;
+  if (placing == null) { select(null); return; }
+  e.preventDefault();
+  const rect = pageViews[pageIdx].div.getBoundingClientRect();
+  const p = presets[placing];
+  const x = (e.clientX - rect.left) / scale;
+  // place so the click point sits at the vertical middle of the first line
+  const y = (e.clientY - rect.top) / scale - p.size * 0.6;
+  const text = expand(p.text);
+  const it = addItem(pageIdx, x, y, text, p.size, true, p.text ? { presetId: p.id, rawText: p.text, placedText: text } : {});
+  if (!p.text) setTimeout(() => focusEnd(it.el.querySelector('.content')), 0);
+}
+
+let seq = 0;
+function addItem(page, x, y, text, size, markDirty, meta = {}) {
+  const el = document.createElement('div');
+  el.className = 'item';
+  el.innerHTML = `<div class="bar"><span class="drag" title="拖曳移動">⠿</span><span data-a="-" title="縮小">A－</span><span data-a="+" title="放大">A＋</span><span data-a="x" title="刪除">✕</span></div><div class="content" contenteditable="plaintext-only" spellcheck="false"></div><div class="resize" title="拖曳調整寬度（超過會自動換行）；雙擊恢復自動寬度"></div>`;
+  const content = el.querySelector('.content');
+  content.textContent = text;
+  const it = { id: ++seq, page, x, y, size, el, w: meta.w || null, presetId: meta.presetId, rawText: meta.rawText, placedText: meta.placedText };
+  const rz = el.querySelector('.resize');
+  rz.addEventListener('mousedown', e => { e.stopPropagation(); select(it); startResize(e, it); });
+  rz.addEventListener('dblclick', e => { e.stopPropagation(); it.w = null; layoutItem(it); setDirty(); });
+  items.push(it);
+  pageViews[page].div.append(el);
+  layoutItem(it);
+  el.addEventListener('mousedown', e => { e.stopPropagation(); select(it); });
+  content.addEventListener('input', () => setDirty());
+  content.addEventListener('blur', () => { if (!content.innerText.trim() && document.activeElement !== content) removeItem(it); });
+  el.querySelector('.bar').addEventListener('mousedown', e => {
+    const a = e.target.dataset.a;
+    if (a === '-' || a === '+') { e.preventDefault(); it.size = Math.max(4, it.size + (a === '+' ? 1 : -1)); layoutItem(it); setDirty(); }
+    else if (a === 'x') { e.preventDefault(); removeItem(it); }
+    else if (e.target.classList.contains('drag')) startDrag(e, it);
+  });
+  if (markDirty) { setDirty(); select(it); }
+  return it;
+}
+function layoutItem(it) {
+  it.el.style.left = it.x * scale + 'px';
+  it.el.style.top = it.y * scale + 'px';
+  const c = it.el.querySelector('.content');
+  c.style.fontSize = it.size * scale + 'px';
+  c.style.width = it.w ? it.w * scale + 'px' : '';
+  c.classList.toggle('wrap', !!it.w);
+}
+function startResize(e, it) {
+  e.preventDefault();
+  const sx = e.clientX;
+  const w0 = it.w || it.el.querySelector('.content').offsetWidth / scale;
+  const move = ev => { it.w = Math.max(it.size, w0 + (ev.clientX - sx) / scale); layoutItem(it); };
+  const up = () => { removeEventListener('mousemove', move); removeEventListener('mouseup', up); setDirty(); };
+  addEventListener('mousemove', move); addEventListener('mouseup', up);
+}
+// Read the lines exactly as the browser wrapped them on screen, so the saved PDF matches.
+function getLines(it) {
+  const c = it.el.querySelector('.content');
+  const text = c.innerText.replace(/\n$/, '');
+  if (!it.w) return text.split('\n');
+  const lines = []; let cur = ''; let lastTop = null;
+  const tol = it.size * scale * 0.5;
+  const walker = document.createTreeWalker(c, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  let node;
+  while ((node = walker.nextNode())) {
+    for (let i = 0; i < node.length; i++) {
+      const ch = node.data[i];
+      if (ch === '\n') { lines.push(cur); cur = ''; lastTop = null; continue; }
+      range.setStart(node, i); range.setEnd(node, i + 1);
+      const r = range.getClientRects()[0];
+      if (r && lastTop != null && r.top > lastTop + tol) { lines.push(cur.replace(/\s+$/, '')); cur = ''; }
+      if (r) lastTop = r.top;
+      cur += ch;
+    }
+  }
+  lines.push(cur);
+  while (lines.length > 1 && lines[lines.length - 1] === '') lines.pop();
+  return lines;
+}
+function removeItem(it) {
+  it.el.remove();
+  items = items.filter(x => x !== it);
+  if (selected === it) selected = null;
+  setDirty();
+}
+function select(it) {
+  if (selected) selected.el.classList.remove('selected');
+  selected = it;
+  if (it) it.el.classList.add('selected');
+}
+function focusEnd(node) {
+  node.focus();
+  const r = document.createRange(); r.selectNodeContents(node); r.collapse(false);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function startDrag(e, it) {
+  e.preventDefault();
+  const sx = e.clientX, sy = e.clientY, ox = it.x, oy = it.y;
+  const move = ev => { it.x = ox + (ev.clientX - sx) / scale; it.y = oy + (ev.clientY - sy) / scale; layoutItem(it); };
+  const up = () => { removeEventListener('mousemove', move); removeEventListener('mouseup', up); setDirty(); };
+  addEventListener('mousemove', move); addEventListener('mouseup', up);
+}
+function setDirty() { dirty = true; if (placing == null) $('status').textContent = '有未儲存的變更'; }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { setPlacing(null); if (document.activeElement?.classList.contains('content')) document.activeElement.blur(); }
+  const editing = document.activeElement?.isContentEditable || /INPUT|TEXTAREA/.test(document.activeElement?.tagName);
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selected && !editing) { e.preventDefault(); removeItem(selected); }
+  if (selected && !editing && e.key.startsWith('Arrow')) {
+    e.preventDefault();
+    const d = e.shiftKey ? 5 : 0.5;
+    if (e.key === 'ArrowLeft') selected.x -= d; if (e.key === 'ArrowRight') selected.x += d;
+    if (e.key === 'ArrowUp') selected.y -= d; if (e.key === 'ArrowDown') selected.y += d;
+    layoutItem(selected); setDirty();
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); if (fileHandle) save(false); else if (pdfDoc) save(true); }
+});
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+// ---------- save ----------
+// Each text item is rendered to a high-resolution PNG and stamped onto the page.
+// This keeps Chinese text looking exactly like the screen without embedding a font.
+function renderItemPng(lines, sizePt, boxW) {
+  const S = 6; // pixels per point → ~430 dpi
+  const lh = sizePt * 1.2;
+  const meas = document.createElement('canvas').getContext('2d');
+  meas.font = `${sizePt * S}px ${FONT}`;
+  const wPt = Math.max(boxW || 0, Math.max(...lines.map(l => meas.measureText(l).width)) / S + sizePt * 0.1);
+  const hPt = lh * lines.length;
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(wPt * S); c.height = Math.ceil(hPt * S);
+  const ctx = c.getContext('2d');
+  ctx.font = `${sizePt * S}px ${FONT}`;
+  ctx.fillStyle = '#000';
+  ctx.textBaseline = 'middle';
+  lines.forEach((l, i) => ctx.fillText(l, 0, (i * lh + lh / 2) * S));
+  return { dataUrl: c.toDataURL('image/png'), wPt, hPt };
+}
+
+async function buildPdf() {
+  const doc = await PDFLib.PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  const pages = doc.getPages();
+  const before = pages.map(p => ({ refs: new Set(contentRefs(p)), xo: new Set(xobjectNames(p)) }));
+  const saved = [];
+  for (const it of items) {
+    const text = it.el.querySelector('.content').innerText.replace(/\n$/, '');
+    if (!text.trim()) continue;
+    saved.push({ page: it.page, x: it.x, y: it.y, size: it.size, w: it.w || null, text, presetId: it.presetId, rawText: it.rawText, placedText: it.placedText });
+    const { dataUrl, wPt, hPt } = renderItemPng(getLines(it), it.size, it.w);
+    const img = await doc.embedPng(dataUrl);
+    const vp = pageViews[it.page].base;            // scale-1 viewport (handles rotation & crop box)
+    // image origin = its bottom-left as seen on screen; angle = direction of screen x-axis in PDF space
+    const [ox, oy] = vp.convertToPdfPoint(it.x, it.y + hPt);
+    const [ax, ay] = vp.convertToPdfPoint(it.x + wPt, it.y + hPt);
+    const angle = Math.round(Math.atan2(ay - oy, ax - ox) * 180 / Math.PI);
+    pages[it.page].drawImage(img, { x: ox, y: oy, width: wPt, height: hPt, rotate: PDFLib.degrees(angle) });
+  }
+  if (saved.length) {
+    const stamps = pages.map((p, i) => ({
+      page: i,
+      refs: contentRefs(p).filter(r => !before[i].refs.has(r)),
+      xobjects: xobjectNames(p).filter(n => !before[i].xo.has(n)),
+    })).filter(s => s.refs.length || s.xobjects.length);
+    doc.catalog.set(PDFLib.PDFName.of(DATA_KEY), PDFLib.PDFHexString.fromText(JSON.stringify({ v: 1, items: saved, stamps })));
+  }
+  return await doc.save();
+}
+
+$('btnSave').addEventListener('click', () => save(false));
+$('btnSaveAs').addEventListener('click', () => save(true));
+async function save(asNew) {
+  if (!pdfDoc) return;
+  document.activeElement?.blur?.();
+  $('status').textContent = '儲存中…';
+  try {
+    const out = await buildPdf();
+    if (!asNew && fileHandle) {
+      if ((await fileHandle.queryPermission?.({ mode: 'readwrite' })) !== 'granted') {
+        if ((await fileHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') throw new Error('沒有寫入權限');
+      }
+      const w = await fileHandle.createWritable();
+      await w.write(out); await w.close();
+      finishSave(out, fileNameStr, '已儲存到原檔 ✓');
+    } else if (window.showSaveFilePicker) {
+      const h = await showSaveFilePicker({ suggestedName: fileNameStr.replace(/\.pdf$/i, '') + '_已填.pdf', types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }] });
+      const w = await h.createWritable(); await w.write(out); await w.close();
+      fileHandle = h;
+      const f = await h.getFile();
+      finishSave(out, f.name, '已另存 ✓');
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' }));
+      a.download = fileNameStr.replace(/\.pdf$/i, '') + '_已填.pdf'; a.click();
+      dirty = false; $('status').textContent = '已下載 ✓';
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') { $('status').textContent = dirty ? '有未儲存的變更' : ''; return; }
+    alert('儲存失敗：' + e.message); $('status').textContent = '儲存失敗';
+  }
+}
+// After saving, reload the saved file: its items come back as editable boxes (see extractEditData).
+async function finishSave(bytes, name, msg) {
+  items.forEach(it => it.el.remove()); items = [];
+  const v = $('viewer');
+  const keepTop = v.scrollTop, keepLeft = v.scrollLeft;
+  const pagesEl = $('pages');
+  pagesEl.style.minHeight = pagesEl.offsetHeight + 'px'; // stop the page jumping while re-rendering
+  try { await loadPdf(new Uint8Array(bytes), name); } finally { pagesEl.style.minHeight = ''; }
+  v.scrollTop = keepTop; v.scrollLeft = keepLeft;
+  $('status').textContent = msg;
+}
+
+renderPresets();
+</script>
+</body>
+</html>
