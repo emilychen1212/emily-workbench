@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臺大醫學院生理所｜會議思考框架</title>
+<meta name="description" content="生理所網站會議的思考框架">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1F2D3D;
+    --navy-soft:#3A4A5C;
+    --moss:#6B7F5E;
+    --moss-soft:#E4E9DE;
+    --barley:#F4EFE4;
+    --barley-deep:#E9E0CC;
+    --paper:#FBF8F1;
+    --ink:#2B2620;
+    --ink-soft:#6B6355;
+    --line:#D8CFB8;
+    --clay:#B5794A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--barley);
+    color:var(--ink);
+    font-family:'Noto Sans TC', sans-serif;
+    line-height:1.7;
+    padding:32px 18px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  /* header */
+  header{
+    background:var(--navy);
+    color:var(--barley);
+    border-radius:14px;
+    padding:28px 28px 24px;
+    margin-bottom:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute;
+    right:-40px; top:-40px;
+    width:160px;height:160px;
+    border-radius:50%;
+    background:var(--navy-soft);
+    opacity:.5;
+  }
+  .eyebrow{
+    font-size:12.5px;
+    letter-spacing:.14em;
+    color:#C9B98A;
+    font-weight:600;
+    position:relative;
+  }
+  h1{
+    font-family:'Noto Serif TC', serif;
+    font-size:24px;
+    font-weight:700;
+    margin:8px 0 6px;
+    position:relative;
+  }
+  .subline{
+    font-size:13.5px;
+    color:#B9C4CE;
+    position:relative;
+  }
+  .meta-row{
+    display:flex; gap:18px; flex-wrap:wrap;
+    margin-top:16px;
+    position:relative;
+    font-size:12.5px;
+    color:#D8CFB8;
+  }
+  .meta-row b{color:var(--barley); font-weight:600;}
+
+  /* progress */
+  .progress-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 20px;
+    margin-bottom:22px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .progress-num{
+    font-family:'Noto Serif TC', serif;
+    font-size:28px;
+    font-weight:700;
+    color:var(--navy);
+    min-width:64px;
+  }
+  .progress-bar-track{
+    flex:1;
+    height:8px;
+    background:var(--barley-deep);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--moss);
+    width:0%;
+    transition:width .35s ease;
+  }
+  .progress-label{font-size:12px;color:var(--ink-soft);white-space:nowrap;}
+
+  /* stance banner */
+  .stance{
+    background:var(--moss-soft);
+    border-left:4px solid var(--moss);
+    border-radius:10px;
+    padding:14px 18px;
+    margin-bottom:26px;
+    font-size:14px;
+  }
+  .stance b{color:var(--navy);}
+
+  /* sections */
+  section{margin-bottom:26px;}
+  .sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:10px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .sec-tag{
+    font-family:'Noto Serif TC', serif;
+    font-size:12px;
+    font-weight:700;
+    color:var(--clay);
+    letter-spacing:.06em;
+  }
+  .sec-title{
+    font-family:'Noto Serif TC', serif;
+    font-size:17px;
+    font-weight:700;
+    color:var(--navy);
+  }
+  .sec-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:-2px 0 12px;
+  }
+
+  ul.qlist{list-style:none; margin:0; padding:0;}
+  .qitem{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:background .2s ease, border-color .2s ease;
+  }
+  .qitem:hover{border-color:var(--moss);}
+  .qitem.checked{
+    background:var(--moss-soft);
+    border-color:var(--moss);
+  }
+  .box{
+    width:19px;height:19px;
+    border-radius:5px;
+    border:2px solid var(--ink-soft);
+    flex-shrink:0;
+    margin-top:2px;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s ease;
+  }
+  .qitem.checked .box{
+    background:var(--moss);
+    border-color:var(--moss);
+  }
+  .box svg{width:11px;height:11px;opacity:0;transition:opacity .15s;}
+  .qitem.checked .box svg{opacity:1;}
+  .qtext{font-size:14.5px;}
+  .qitem.checked .qtext{color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--line);}
+  .qsub{font-size:12px; color:var(--ink-soft); margin-top:3px;}
+  .qitem.checked .qsub{text-decoration:none;}
+
+  /* internal-prep list (non-checkbox, plain) */
+  .prep-list{margin:0;padding-left:0;list-style:none;}
+  .prep-list li{
+    padding:10px 14px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:8px;
+    font-size:14px;
+  }
+  .prep-list li b{color:var(--navy);}
+
+  /* phrase box */
+  .phrase{
+    background:var(--navy);
+    color:var(--barley);
+    border-radius:12px;
+    padding:18px 20px;
+    font-size:14.5px;
+    margin-top:8px;
+  }
+  .phrase .lbl{
+    font-size:11.5px;
+    letter-spacing:.1em;
+    color:#C9B98A;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .phrase blockquote{
+    margin:0;
+    font-family:'Noto Serif TC', serif;
+    font-size:15.5px;
+    line-height:1.8;
+    border-left:3px solid var(--clay);
+    padding-left:14px;
+  }
+
+  footer{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:36px;
+  }
+
+  @media (max-width:480px){
+    header{padding:22px 20px;}
+    h1{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">會議前思考框架</div>
+    <h1>臺大醫學院生理所｜網站改版需求討論</h1>
+    <div class="subline">立場：帶客戶走向重建改版，不是討論「搬不搬」</div>
+    <div class="meta-row">
+      <span><b>對象</b>　生理所助教</span>
+      <span><b>陪同</b>　PM</span>
+      <span><b>今日目標</b>　收需求、不報價</span>
+    </div>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-num" id="progressNum">0/12</div>
+    <div style="flex:1;">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBar"></div></div>
+      <div class="progress-label" style="margin-top:6px;">已確認的提問項目</div>
+    </div>
+  </div>
+
+  <div class="stance">
+    <b>今日定調：</b>不是來問「要不要改版」，是來問「改版要改成什麼樣子」。學生資料庫比對交給 PM 會後對接原廠，會議中不深入討論技術細節。
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">A</span>
+      <span class="sec-title">改版方向提問</span>
+    </div>
+    <div class="sec-note">直接挖痛點與期望，作為改版切入點</div>
+    <ul class="qlist" id="listA"></ul>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">B</span>
+      <span class="sec-title">資料庫比對（技術執行面）</span>
+    </div>
+    <div class="sec-note">問的是「取得管道」，不是「要不要搬」——意願已經不是問題</div>
+    <ul class="qlist" id="listB"></ul>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">C</span>
+      <span class="sec-title">時程與決策</span>
+    </div>
+    <div class="sec-note">任何方案都需要的基本資訊</div>
+    <ul class="qlist" id="listC"></ul>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">D</span>
+      <span class="sec-title">會前自我確認（不用問客戶）</span>
+    </div>
+    <ul class="prep-list">
+      <li><b>分工</b>　今天由你主導需求疏理，技術規格判斷交給 PM，避免現場搶話或漏問</li>
+      <li><b>案例</b>　醫學院底下已有系所子站（如醫學系 /med/），可作為改版規格範例現場舉例</li>
+      <li><b>成功標準</b>　先跟 PM 對齊「問到哪些資訊，今天才算完整」</li>
+    </ul>
+  </section>
+
+  <div class="phrase">
+    <div class="lbl">被追問時程／金額時的固定話術</div>
+    <blockquote>這部分我們會後續評估後正式回覆，預計〔具體日期〕前給您方案。</blockquote>
+  </div>
+
+  <footer>把「沒有答案」轉成「有掌握感的下一步」</footer>
+</div>
+
+<script>
+const data = {
+  A: [
+    {q:"現有網站的呈現方式、資訊架構，您覺得哪裡不好用、不好找？", s:"直接挖痛點"},
+    {q:"有沒有想比照的對象？", s:"例如醫學院其他系所子站，或同性質校院生理所網站"},
+    {q:"除了登入查詢、課程、榮譽榜、獎助學金，有沒有想新增的功能或內容？", s:"研究成果、招生資訊、師資介紹等"},
+    {q:"網站的主要使用族群排序是誰？", s:"在校生／應考生／教師／一般訪客，影響改版資訊架構優先順序"}
+  ],
+  B: [
+    {q:"能否協助聯繫原廠商，取得學生帳號、成績資料的資料庫欄位結構與資料匯出？", s:"PM 比對欄位的前提"},
+    {q:"原廠是否還在維護期，是否會配合交付？", s:"避免卡在原廠不配合"}
+  ],
+  C: [
+    {q:"預計何時上線？", s:"有無配合學期、招生、評鑑的硬性截止日"},
+    {q:"這個案子的預算與決策流程是誰？", s:"所長簽核，或醫學院層級統一編列"},
+    {q:"為什麼決定這時候要改版？", s:"IT治理要求／原廠約到期／想整合識別"},
+    {q:"上線後內容由誰維護？", s:"助教本人後台更新，或醫學院統一管理"},
+    {q:"原網站網域、主機目前掌握在誰手上？", s:"原廠合約何時到期"},
+    {q:"是否能取得原始碼？", s:"確認資料所有權是否明確"}
+  ]
+};
+
+let total = 0;
+function buildList(id, items){
+  const ul = document.getElementById(id);
+  items.forEach((item, i) => {
+    total++;
+    const li = document.createElement('li');
+    li.className = 'qitem';
+    li.innerHTML = `
+      <div class="box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6L4.5 8.5L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><div class="qtext">${item.q}</div><div class="qsub">${item.s}</div></div>
+    `;
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      updateProgress();
+    });
+    ul.appendChild(li);
+  });
+}
+
+function updateProgress(){
+  const checked = document.querySelectorAll('.qitem.checked').length;
+  document.getElementById('progressNum').textContent = `${checked}/${total}`;
+  document.getElementById('progressBar').style.width = `${(checked/total)*100}%`;
+}
+
+buildList('listA', data.A);
+buildList('listB', data.B);
+buildList('listC', data.C);
+updateProgress();
+</script>
+</body>
+</html>
