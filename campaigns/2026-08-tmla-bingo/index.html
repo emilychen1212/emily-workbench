@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMLA 賓果遊戲 · 知識探索題目抽選</title>
+<meta name="description" content="賓果遊戲的知識題目抽選">
+<style>
+  :root{
+    --paper:#f5f3ea; --paper-2:#fbfaf4;
+    --ink:#2b3d3a; --ink-soft:#5c6f6a;
+    --mint:#c3e2d5; --mint-soft:#e6f1ec;
+    --teal:#3a8f83; --teal-deep:#2b6b62;
+    --line:#8fc4b6; --line-soft:#cfe3da;
+    --ochre:#d8a24c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    color:var(--ink); line-height:1.5; min-height:100vh;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(rgba(58,143,131,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(58,143,131,.045) 1px, transparent 1px);
+    background-size:26px 26px;
+  }
+  .line-art{color:var(--teal); opacity:.6}
+
+  /* ---------- Header ---------- */
+  header.top{
+    max-width:1280px; margin:0 auto; padding:30px 20px 10px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:18px}
+  .brand .mark{width:52px; height:60px; flex:none}
+  .title-block h1{font-size:30px; font-weight:800; color:var(--teal-deep); letter-spacing:1px}
+  .title-block p{font-size:14px; color:var(--ink-soft); margin-top:4px; letter-spacing:2px}
+  header .deco{width:270px; max-width:45vw; height:64px}
+  @media(max-width:640px){ header .deco{display:none} }
+
+  .wrap{max-width:1280px; margin:0 auto; padding:6px 20px 70px}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex; gap:8px; flex-wrap:wrap; padding-left:4px}
+  .tab{
+    border:1.5px solid var(--line-soft); border-bottom:none; cursor:pointer;
+    font-size:16px; font-weight:700; padding:12px 24px; border-radius:14px 14px 0 0;
+    background:transparent; color:var(--teal-deep); transition:.15s;
+  }
+  .tab:hover{background:var(--mint-soft)}
+  .tab.active{background:var(--teal); color:#fff; border-color:var(--teal)}
+
+  .panel{
+    background:var(--paper-2); border:1.5px solid var(--line-soft);
+    border-radius:0 18px 18px 18px; padding:30px;
+    box-shadow:0 10px 30px rgba(43,107,98,.07);
+  }
+  .view{display:none}
+  .view.active{display:block; animation:fade .3s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+
+  /* ---------- Draw / slot ---------- */
+  .draw-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px}
+  .machine-title{display:flex; align-items:center; gap:12px; font-size:28px; font-weight:800; color:var(--teal-deep); letter-spacing:2px}
+  .machine-title svg{width:30px; height:34px; flex:none}
+  .fs-btn{
+    background:transparent; color:var(--teal-deep); border:1.5px solid var(--line);
+    cursor:pointer; padding:8px 16px; border-radius:22px; font-weight:700; font-size:14px; transition:.15s;
+  }
+  .fs-btn:hover{background:var(--mint-soft)}
+  .counter{text-align:center; margin-bottom:18px}
+  .counter span{
+    display:inline-block; background:var(--mint-soft); color:var(--teal-deep);
+    border:1.5px solid var(--line-soft); font-size:17px; font-weight:700;
+    padding:8px 26px; border-radius:30px; letter-spacing:1px;
+  }
+  .filters{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:18px}
+  .filter-btn{border:1.5px solid var(--line-soft); background:#fff; color:var(--ink-soft); cursor:pointer; font-weight:700; font-size:14px; padding:8px 18px; border-radius:22px; transition:.15s}
+  .filter-btn:hover{background:var(--mint-soft)}
+  .filter-btn.active{background:var(--c-bg,var(--teal)); border-color:var(--c-bd,var(--teal)); color:var(--c-tx,#fff)}
+  .filter-btn:disabled{opacity:.38; cursor:not-allowed}
+  .filter-btn:disabled:hover{background:#fff}
+  .filter-btn .cnt{font-weight:800; opacity:.75; margin-left:2px}
+
+  .reel-frame{
+    background:var(--mint-soft); border:2px solid var(--line);
+    border-radius:70px 70px 18px 18px; padding:18px;
+  }
+  .reel-window{
+    height:342px; overflow:hidden; position:relative;
+    border-radius:56px 56px 12px 12px; background:var(--paper-2);
+    border:1.5px solid var(--line-soft);
+  }
+  .reel-window::before,.reel-window::after{content:""; position:absolute; left:0; right:0; height:70px; z-index:3; pointer-events:none}
+  .reel-window::before{top:0; background:linear-gradient(var(--paper-2),transparent)}
+  .reel-window::after{bottom:0; background:linear-gradient(transparent,var(--paper-2))}
+  .reel-strip{position:absolute; left:0; right:0; top:0; will-change:transform}
+  /* category palettes — soft pastels that blend with the mint theme */
+  .cat-num    { --c-row:#eef4f9; --c-bg:#d6e6f1; --c-bd:#a9c9de; --c-tx:#3f6f8f; }
+  .cat-country{ --c-row:#f8eef1; --c-bg:#f0dde3; --c-bd:#ddb8c3; --c-tx:#a86279; }
+  .cat-city   { --c-row:#f9f2df; --c-bg:#f1e3c2; --c-bd:#e2cc95; --c-tx:#a17c33; }
+
+  .reel-item{height:114px; display:flex; align-items:center; gap:20px; padding:0 40px; background:var(--c-row,transparent)}
+  .reel-item .badge{
+    width:52px; height:52px; flex:none; border-radius:50%;
+    border:1.5px solid var(--c-bd,var(--teal));
+    background:var(--c-bg,var(--mint-soft)); color:var(--c-tx,var(--teal-deep));
+    font-weight:800; font-size:18px; line-height:1.1; text-align:center;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .reel-item .q{
+    font-size:27px; font-weight:700; color:var(--ink); line-height:1.32;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .reel-item.win-target .q{color:var(--teal-deep)}
+  .center-line{
+    position:absolute; left:16px; right:16px; top:50%; height:114px; transform:translateY(-50%);
+    border:1.5px solid var(--teal); border-radius:12px; z-index:2; pointer-events:none;
+    background:rgba(58,143,131,.05);
+  }
+  .center-line::before,.center-line::after{
+    content:""; position:absolute; top:50%; width:10px; height:10px; transform:translateY(-50%) rotate(45deg);
+    background:var(--ochre); border-radius:2px;
+  }
+  .center-line::before{left:-6px} .center-line::after{right:-6px}
+
+  .controls{display:flex; gap:14px; justify-content:center; margin-top:26px; flex-wrap:wrap}
+  .btn{border:none; cursor:pointer; font-size:19px; font-weight:800; padding:14px 44px; border-radius:40px; transition:.15s; letter-spacing:1px}
+  .btn.go{background:var(--teal); color:#fff}
+  .btn.go:hover{background:var(--teal-deep)}
+  .btn.stop{background:transparent; color:var(--teal-deep); border:1.5px solid var(--line)}
+  .btn.stop:hover{background:var(--mint-soft)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.4; cursor:not-allowed}
+
+  /* reveal cards */
+  .reveal{margin-top:26px; display:flex; flex-direction:column; gap:16px; max-height:0; overflow:hidden; transition:max-height .45s ease}
+  .reveal.show{max-height:4000px}
+  .q-card{border:1.5px solid var(--c-bd,var(--line)); border-radius:18px; padding:32px 28px; background:#fff; box-shadow:0 6px 18px rgba(43,107,98,.06); text-align:center}
+  .cat-badge{
+    width:76px; height:76px; margin:0 auto 16px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:23px; font-weight:800;
+    background:var(--c-bg,var(--mint-soft)); border:2px solid var(--c-bd,var(--teal)); color:var(--c-tx,var(--teal-deep));
+  }
+  .q-card .lbl{font-size:13px; color:var(--teal); font-weight:800; letter-spacing:3px; margin-bottom:14px}
+  .q-card .qtext{font-size:40px; font-weight:800; color:var(--ink); line-height:1.4}
+  .see-ans{margin-top:22px; background:var(--ochre); color:#fff; border:none; cursor:pointer; font-size:17px; font-weight:700; padding:12px 32px; border-radius:30px; transition:.15s}
+  .see-ans:hover{filter:brightness(.94)}
+  .a-box{margin-top:22px; border-top:1px dashed var(--line-soft); padding-top:22px; display:none}
+  .a-box.show{display:block; animation:fade .3s ease}
+  .a-box .albl{font-size:13px; color:var(--ochre); font-weight:800; letter-spacing:3px; margin-bottom:10px}
+  .a-box .atext{font-size:40px; font-weight:800; color:var(--teal-deep); line-height:1.5}
+
+  /* ---------- Setup ---------- */
+  .admin-lock{max-width:380px; margin:24px auto; text-align:center; background:#fff; border:1.5px solid var(--line-soft); border-radius:16px; padding:36px 32px}
+  .admin-lock svg{width:46px; height:54px; margin-bottom:8px}
+  .admin-lock h2{color:var(--teal-deep); font-size:21px; margin-bottom:8px}
+  .admin-lock p{color:var(--ink-soft); font-size:13px; line-height:1.6; margin-bottom:22px}
+  .admin-lock input{margin-bottom:12px; text-align:center}
+  .admin-lock button{width:100%; background:var(--teal); color:#fff; border:none; cursor:pointer; font-size:16px; font-weight:800; padding:13px; border-radius:10px; letter-spacing:1px; transition:.15s}
+  .admin-lock button:hover{background:var(--teal-deep)}
+  .login-err{color:#c0564f; font-size:13px; font-weight:700; margin-top:12px; min-height:18px}
+  .admin-bar{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; color:var(--teal-deep); font-weight:700; font-size:14px}
+  .form-card{background:#fff; border:1.5px solid var(--line-soft); border-radius:16px; padding:24px; margin-bottom:20px}
+  .form-card h2{font-size:18px; margin-bottom:16px; color:var(--teal-deep); display:flex; align-items:center; gap:8px}
+  label.field{display:block; margin-bottom:16px}
+  label.field > span{display:block; font-weight:700; margin-bottom:6px; font-size:14px; color:var(--ink)}
+  label.field small{font-weight:400; color:var(--ink-soft)}
+  input[type=text],input[type=number],input[type=password],textarea{
+    width:100%; border:1.5px solid var(--line-soft); border-radius:10px;
+    padding:11px 13px; font-size:15px; font-family:inherit; color:var(--ink); background:var(--paper-2);
+  }
+  input:focus,textarea:focus{outline:none; border-color:var(--teal); background:#fff}
+  textarea{resize:vertical; min-height:120px; line-height:1.7}
+  .row{display:flex; gap:16px; flex-wrap:wrap}
+  .row > label.field{flex:1; min-width:150px}
+  .switch{display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:14px; font-weight:700; font-size:14px}
+  .switch input{width:44px; height:24px; -webkit-appearance:none; appearance:none; background:var(--line-soft); border-radius:20px; position:relative; cursor:pointer; transition:.2s; flex:none}
+  .switch input:checked{background:var(--teal)}
+  .switch input::after{content:""; position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.2s}
+  .switch input:checked::after{left:23px}
+
+  /* question table */
+  .table-wrap{overflow-x:auto; margin-bottom:14px}
+  .qtable{width:100%; min-width:640px; border-collapse:collapse}
+  .qtable th{font-size:13px; color:var(--teal-deep); text-align:left; padding:6px 8px; border-bottom:2px solid var(--line-soft); font-weight:800; letter-spacing:1px}
+  .qtable td{padding:6px 8px; vertical-align:top; border-bottom:1px solid #eef2f0}
+  .qtable td.idx{width:34px; color:var(--ink-soft); font-weight:700; text-align:center; padding-top:16px}
+  .qtable input{width:100%}
+  .qtable .col-a{width:34%}
+  .qtable .col-cat{width:100px}
+  select.cat-in{width:100%; border:1.5px solid var(--line-soft); border-radius:8px; padding:10px 8px; font-family:inherit; font-size:14px; background:var(--paper-2); color:var(--ink); cursor:pointer}
+  select.cat-in:focus{outline:none; border-color:var(--teal); background:#fff}
+  .row-del{border:1.5px solid var(--line-soft); background:#fff; color:#b9605a; cursor:pointer; width:34px; height:38px; border-radius:9px; font-size:15px; margin-top:4px}
+  .row-del:hover{background:#fdecea; border-color:#e6b3ae}
+  .count-hint{font-size:13px; color:var(--ink-soft); margin:6px 0 14px}
+
+  .btn-sm{border:none; cursor:pointer; font-weight:700; font-size:15px; padding:11px 22px; border-radius:10px; transition:.15s}
+  .btn-sm.primary{background:var(--teal); color:#fff}
+  .btn-sm.primary:hover{background:var(--teal-deep)}
+  .btn-sm.plain{background:var(--mint-soft); color:var(--teal-deep); border:1.5px solid var(--line-soft)}
+  .btn-sm.plain:hover{background:#dcebe4}
+  .bar{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .saved-hint{color:var(--teal); font-weight:700; opacity:0; transition:.3s}
+  .saved-hint.show{opacity:1}
+
+  /* ---------- History ---------- */
+  .hist-toolbar{display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap}
+  .round-card{background:#fff; border:1.5px solid var(--line-soft); border-radius:14px; padding:18px 20px; margin-bottom:14px}
+  .round-card h3{font-size:16px; color:var(--teal-deep); margin-bottom:2px}
+  .round-card .time{font-size:12px; color:var(--ink-soft); margin-bottom:12px}
+  .qa-row{padding:10px 0; border-top:1px dashed var(--line-soft)}
+  .qa-row:first-of-type{border-top:none}
+  .qa-row .q{font-weight:700; color:var(--ink)}
+  .hist-tag{display:inline-block; font-size:12px; font-weight:800; padding:2px 10px; border-radius:20px; margin-right:8px; background:var(--c-bg,var(--mint-soft)); border:1px solid var(--c-bd,var(--line)); color:var(--c-tx,var(--teal-deep))}
+  .qa-row .a{font-size:14px; color:var(--teal-deep); margin-top:4px}
+  .empty{text-align:center; color:var(--ink-soft); padding:44px; background:#fff; border:1.5px dashed var(--line-soft); border-radius:14px}
+
+  /* footer line art */
+  .panel-foot{margin-top:30px; display:flex; justify-content:center}
+  .panel-foot svg{width:100%; max-width:520px; height:60px}
+
+  .machine-wrap:fullscreen{background:var(--paper); padding:4vh 5vw; display:flex; flex-direction:column; justify-content:center}
+  .machine-wrap:fullscreen .reel-window{height:46vh}
+  .toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:12px 24px; border-radius:30px; font-weight:700; opacity:0; transition:.3s; z-index:10000}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .confetti{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:9999}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg class="mark line-art" viewBox="0 0 48 58" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 55 V23 a19 19 0 0 1 38 0 V55"/>
+      <path d="M24 5 V55"/>
+      <path d="M6 29 H42"/>
+      <path d="M2 55 H46"/>
+    </svg>
+    <div class="title-block">
+      <h1>TMLA 賓果遊戲</h1>
+      <p>知識探索 · 題目抽選</p>
+    </div>
+  </div>
+  <svg class="deco line-art" viewBox="0 0 270 68" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="2" y1="62" x2="268" y2="62"/>
+    <line x1="34" y1="62" x2="34" y2="34"/><circle cx="34" cy="24" r="14"/>
+    <line x1="238" y1="62" x2="238" y2="40"/><circle cx="238" cy="30" r="11"/>
+    <circle cx="150" cy="30" r="7"/>
+    <path d="M150 37 v13"/>
+    <path d="M150 42 l-12 5"/><path d="M150 42 l12 5"/>
+    <path d="M150 50 l-8 12"/><path d="M150 50 l8 12"/>
+    <rect x="132" y="45" width="18" height="11" rx="1.5"/>
+    <path d="M150 45 v11"/>
+    <path d="M92 62 v-9"/><path d="M92 53 h16 v9"/>
+  </svg>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab" data-view="setup">題目設定</button>
+    <button class="tab active" data-view="draw">抽題活動</button>
+    <button class="tab" data-view="history">抽題紀錄</button>
+  </div>
+
+  <div class="panel">
+    <!-- ============ SETUP ============ -->
+    <section class="view" id="view-setup">
+      <div id="admin-lock" class="admin-lock">
+        <svg class="line-art" viewBox="0 0 48 58" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.85"><path d="M5 55 V23 a19 19 0 0 1 38 0 V55"/><path d="M24 5 V55"/><path d="M6 29 H42"/><path d="M2 55 H46"/></svg>
+        <h2>管理者登入</h2>
+        <p>「題目設定」為管理區，需登入後才能編輯題目與答案</p>
+        <input type="text" id="login-user" placeholder="帳號" autocomplete="off" autocapitalize="off">
+        <input type="password" id="login-pass" placeholder="密碼">
+        <button id="btn-login">登入</button>
+        <div class="login-err" id="login-err"></div>
+      </div>
+
+      <div id="admin-content" style="display:none">
+      <div class="admin-bar">
+        <span>🔓 管理區已解鎖</span>
+        <button class="btn-sm plain" id="btn-logout">登出</button>
+      </div>
+      <div class="form-card">
+        <h2>活動設定</h2>
+        <label class="field">
+          <span>活動標題</span>
+          <input type="text" id="cfg-title" placeholder="例如：TMLA 賓果抽題">
+        </label>
+        <div class="row">
+          <label class="field">
+            <span>每次抽出題數</span>
+            <input type="number" id="cfg-count" min="1" value="1">
+          </label>
+        </div>
+        <label class="switch"><input type="checkbox" id="cfg-remove" checked> 抽過的題目不再出現</label>
+        <label class="switch"><input type="checkbox" id="cfg-sound" checked> 開啟音效</label>
+      </div>
+
+      <div class="form-card">
+        <h2>題目池 &amp; 答案池<small>　（題目與答案一對一對應）</small></h2>
+        <div class="table-wrap">
+        <table class="qtable">
+          <thead><tr><th></th><th>題目池</th><th class="col-a">答案池</th><th class="col-cat">類別</th><th></th></tr></thead>
+          <tbody id="qbody"></tbody>
+        </table>
+        </div>
+        <div class="count-hint" id="qcount">目前 0 題</div>
+        <div class="bar" style="margin-bottom:18px">
+          <button class="btn-sm plain" id="btn-addrow">＋ 新增一列</button>
+          <button class="btn-sm plain" id="btn-sample">載入範例題庫</button>
+        </div>
+
+        <label class="field">
+          <span>批次匯入　<small>每行一題，格式：題目, 答案, 類別（類別填 數字／國家／城市，可省略）。用「逗號」或 Tab 分隔，可直接從 Excel 貼上，匯入會取代上表</small></span>
+          <textarea id="bulk" placeholder="一年有幾個月？, 12, 數字&#10;壽司是哪個國家的料理？, 日本, 國家&#10;總統府在哪個直轄市？, 臺北市, 城市"></textarea>
+        </label>
+        <div class="bar">
+          <button class="btn-sm plain" id="btn-import">從文字匯入</button>
+        </div>
+
+        <div class="bar" style="margin-top:22px; border-top:1px solid var(--line-soft); padding-top:20px">
+          <button class="btn-sm primary" id="btn-save">儲存設定</button>
+          <span class="saved-hint" id="saved-hint">✓ 已儲存</span>
+        </div>
+      </div>
+      </div><!-- /admin-content -->
+    </section>
+
+    <!-- ============ DRAW ============ -->
+    <section class="view active" id="view-draw">
+      <div class="machine-wrap" id="machine-wrap">
+        <div class="draw-head">
+          <div class="machine-title" id="draw-title">
+            <svg class="line-art" viewBox="0 0 48 58" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 54 V24 a18 18 0 0 1 36 0 V54"/><path d="M2 54 H46"/></svg>
+            <span id="draw-title-text">TMLA 賓果抽題</span>
+          </div>
+          <button class="fs-btn" id="btn-fs">⛶ 全螢幕</button>
+        </div>
+        <div class="counter"><span id="pool-count">剩餘題數：0</span></div>
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-cat="">全部 <span class="cnt"></span></button>
+          <button class="filter-btn cat-num" data-cat="數字">數字 <span class="cnt"></span></button>
+          <button class="filter-btn cat-country" data-cat="國家">國家 <span class="cnt"></span></button>
+          <button class="filter-btn cat-city" data-cat="城市">城市 <span class="cnt"></span></button>
+        </div>
+        <div class="reel-frame">
+          <div class="reel-window">
+            <div class="center-line"></div>
+            <div class="reel-strip" id="reel-strip"></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn go" id="btn-draw">開始抽題</button>
+          <button class="btn stop" id="btn-stop" disabled>停止</button>
+        </div>
+        <div class="reveal" id="reveal"></div>
+      </div>
+    </section>
+
+    <!-- ============ HISTORY ============ -->
+    <section class="view" id="view-history">
+      <div class="hist-toolbar">
+        <button class="btn-sm plain" id="btn-export">⬇️ 匯出 CSV</button>
+        <button class="btn-sm plain" id="btn-clear-hist">🗑️ 清除抽題紀錄</button>
+      </div>
+      <div id="history-list"></div>
+    </section>
+
+    <div class="panel-foot">
+      <svg class="line-art" viewBox="0 0 520 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4">
+        <line x1="4" y1="54" x2="516" y2="54"/>
+        <line x1="60" y1="54" x2="60" y2="30"/><circle cx="60" cy="22" r="12"/>
+        <line x1="118" y1="54" x2="118" y2="38"/><circle cx="118" cy="30" r="9"/>
+        <rect x="250" y="36" width="14" height="18" rx="1"/><rect x="266" y="32" width="14" height="22" rx="1"/><rect x="282" y="40" width="14" height="14" rx="1"/>
+        <line x1="440" y1="54" x2="440" y2="32"/><circle cx="440" cy="22" r="13"/>
+        <line x1="470" y1="54" x2="470" y2="40"/><circle cx="470" cy="32" r="9"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<canvas class="confetti" id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------------- State & persistence ---------------- */
+const LS_CFG = "tmlaBingo.config";
+const LS_HIST = "tmlaBingo.history";
+const CATS = ["數字","國家","城市"];
+function catClass(cat){ return cat==="數字"?"cat-num":cat==="國家"?"cat-country":cat==="城市"?"cat-city":""; }
+function catLabel(cat){ return CATS.includes(cat) ? cat : "題"; }
+
+const SAMPLE = [
+  {q:"一年有幾個月？", a:"12", cat:"數字"},
+  {q:"一週有幾天？", a:"7", cat:"數字"},
+  {q:"一個直角是幾度？", a:"90", cat:"數字"},
+  {q:"壽司是哪個國家的傳統料理？", a:"日本", cat:"國家"},
+  {q:"艾菲爾鐵塔位於哪個國家？", a:"法國", cat:"國家"},
+  {q:"金字塔最著名的所在國家是？", a:"埃及", cat:"國家"},
+  {q:"總統府位於臺灣哪個直轄市？", a:"臺北市", cat:"城市"},
+  {q:"駁二藝術特區在哪個直轄市？", a:"高雄市", cat:"城市"},
+  {q:"逢甲夜市位於哪個直轄市？", a:"臺中市", cat:"城市"}
+];
+const defaultCfg = { title:"TMLA 賓果抽題", count:1, remove:true, sound:true, items:SAMPLE.map(x=>({...x})) };
+
+function loadCfg(){ try{ return Object.assign({}, defaultCfg, JSON.parse(localStorage.getItem(LS_CFG)||"{}")); }catch(e){ return Object.assign({}, defaultCfg); } }
+function saveCfg(c){ localStorage.setItem(LS_CFG, JSON.stringify(c)); }
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(LS_HIST)||"[]"); }catch(e){ return []; } }
+function saveHist(h){ localStorage.setItem(LS_HIST, JSON.stringify(h)); }
+
+let cfg = loadCfg();
+let history = loadHist();     // [{round, time, items:[{q,a}]}]
+let pool = [];                // remaining questions this session {q,a}
+
+/* ---------------- Admin login (soft lock) ---------------- */
+const ADMIN_HASH = "eeffaadc85442b22b911eb52430a5fc9ba6d7bff2343630217ba0d5bfdf45549"; // sha256("帳號:密碼")
+let adminUnlocked = sessionStorage.getItem("tmlaBingo.admin")==="1";
+async function sha256(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function showAdmin(on){
+  document.getElementById("admin-lock").style.display = on ? "none" : "block";
+  document.getElementById("admin-content").style.display = on ? "block" : "none";
+  if(on) fillForm();
+}
+
+/* ---------------- Helpers ---------------- */
+const $ = s => document.querySelector(s);
+function escapeHTML(s){ return String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1800); }
+function cfgItems(){ return (cfg.items||[]).filter(x=>x && x.q && x.q.trim()); }
+
+/* ---------------- Tabs ---------------- */
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    tab.classList.add("active");
+    $("#view-"+tab.dataset.view).classList.add("active");
+    if(tab.dataset.view==="draw") refreshDraw();
+    if(tab.dataset.view==="history") renderHistory();
+    if(tab.dataset.view==="setup") showAdmin(adminUnlocked);
+  });
+});
+
+/* login / logout */
+async function doLogin(){
+  const u=$("#login-user").value.trim(), p=$("#login-pass").value;
+  if(!u || !p){ $("#login-err").textContent="請輸入帳號與密碼"; return; }
+  let h; try{ h=await sha256(u+":"+p); }catch(e){ $("#login-err").textContent="此瀏覽器不支援登入驗證"; return; }
+  if(h===ADMIN_HASH){
+    adminUnlocked=true; sessionStorage.setItem("tmlaBingo.admin","1");
+    $("#login-err").textContent=""; $("#login-pass").value=""; $("#login-user").value="";
+    showAdmin(true); toast("登入成功");
+  } else { $("#login-err").textContent="帳號或密碼錯誤"; $("#login-pass").value=""; }
+}
+$("#btn-login").onclick=doLogin;
+$("#login-pass").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
+$("#login-user").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#login-pass").focus(); });
+$("#btn-logout").onclick=()=>{ adminUnlocked=false; sessionStorage.removeItem("tmlaBingo.admin"); showAdmin(false); toast("已登出"); };
+
+/* ---------------- Setup: table editor ---------------- */
+function fillForm(){
+  $("#cfg-title").value = cfg.title;
+  $("#cfg-count").value = cfg.count;
+  $("#cfg-remove").checked = cfg.remove;
+  $("#cfg-sound").checked = cfg.sound;
+  renderTable(cfg.items && cfg.items.length ? cfg.items : [{q:"",a:""}]);
+}
+function renderTable(items){
+  const body=$("#qbody");
+  body.innerHTML = items.map((it,i)=>rowHTML(it,i)).join("");
+  bindRows();
+  updateQCount();
+}
+function rowHTML(it,i){
+  const cat = CATS.includes(it.cat) ? it.cat : "數字";
+  const opts = CATS.map(c=>`<option value="${c}"${c===cat?" selected":""}>${c}</option>`).join("");
+  return `<tr>
+    <td class="idx">${i+1}</td>
+    <td><input class="q-in" type="text" value="${escapeAttr(it.q||"")}" placeholder="輸入題目"></td>
+    <td class="col-a"><input class="a-in" type="text" value="${escapeAttr(it.a||"")}" placeholder="輸入對應答案"></td>
+    <td class="col-cat"><select class="cat-in">${opts}</select></td>
+    <td><button class="row-del" title="刪除">✕</button></td>
+  </tr>`;
+}
+function escapeAttr(s){ return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+function bindRows(){
+  $("#qbody").querySelectorAll(".row-del").forEach(btn=>{
+    btn.onclick=()=>{ btn.closest("tr").remove(); reindex(); updateQCount(); };
+  });
+  $("#qbody").querySelectorAll("input").forEach(inp=>inp.oninput=updateQCount);
+}
+function reindex(){ $("#qbody").querySelectorAll("tr").forEach((tr,i)=>tr.querySelector(".idx").textContent=i+1); }
+function readTable(){
+  const out=[];
+  $("#qbody").querySelectorAll("tr").forEach(tr=>{
+    const q=tr.querySelector(".q-in").value.trim();
+    const a=tr.querySelector(".a-in").value.trim();
+    const cat=tr.querySelector(".cat-in").value;
+    if(q) out.push({q,a,cat});
+  });
+  return out;
+}
+function updateQCount(){ $("#qcount").textContent = `目前 ${readTable().length} 題`; }
+
+$("#btn-addrow").onclick=()=>{
+  const body=$("#qbody");
+  const tr=document.createElement("tr");
+  tr.innerHTML = rowHTML({q:"",a:""}, body.children.length);
+  body.appendChild(tr);
+  bindRows(); reindex(); updateQCount();
+  tr.querySelector(".q-in").focus();
+};
+$("#btn-sample").onclick=()=>{ renderTable(SAMPLE.map(x=>({...x}))); toast("已載入範例題庫"); };
+$("#btn-import").onclick=()=>{
+  const raw=$("#bulk").value.split("\n").map(l=>l.trim()).filter(Boolean);
+  if(!raw.length){ toast("沒有可匯入的內容"); return; }
+  const items=raw.map(line=>{
+    const delim = line.includes("\t") ? "\t" : ",";
+    const parts = line.split(delim).map(s=>s.trim());
+    let q=parts[0]||"", a="", cat="";
+    if(parts.length>=3 && CATS.includes(parts[parts.length-1])){
+      cat=parts[parts.length-1];
+      a=parts.slice(1,parts.length-1).join(delim);
+    } else {
+      a=parts.slice(1).join(delim);
+    }
+    return {q, a, cat};
+  }).filter(x=>x.q);
+  renderTable(items);
+  $("#bulk").value="";
+  toast(`已匯入 ${items.length} 題`);
+};
+$("#btn-save").onclick=()=>{
+  cfg.title = $("#cfg-title").value.trim() || "TMLA 賓果抽題";
+  cfg.count = Math.max(1, parseInt($("#cfg-count").value)||1);
+  cfg.remove = $("#cfg-remove").checked;
+  cfg.sound = $("#cfg-sound").checked;
+  cfg.items = readTable();
+  saveCfg(cfg);
+  resetPool();
+  const h=$("#saved-hint"); h.classList.add("show"); setTimeout(()=>h.classList.remove("show"),1500);
+  toast(`設定已儲存（共 ${cfg.items.length} 題）`);
+};
+
+/* ---------------- Draw logic ---------------- */
+let currentFilter = "";   // "" = all, otherwise a category
+function resetPool(){ pool = cfgItems().map(x=>({...x})); }
+function filteredPool(){ return currentFilter ? pool.filter(p=>p.cat===currentFilter) : pool; }
+function refreshDraw(){
+  $("#draw-title-text").textContent = cfg.title;
+  if(pool.length===0) resetPool();
+  updatePoolCount();
+  if(!spinning){
+    const src = filteredPool();
+    if(src.length) buildStrip(src);
+    else buildStrip([], currentFilter ? `「${currentFilter}」已全部抽完` : "尚無題目，請先到「題目設定」新增");
+  }
+}
+function updatePoolCount(){
+  $("#pool-count").textContent = `剩餘題數：${filteredPool().length}`;
+  document.querySelectorAll("#filters .filter-btn").forEach(b=>{
+    const c=b.dataset.cat;
+    const n = c ? pool.filter(p=>p.cat===c).length : pool.length;
+    b.querySelector(".cnt").textContent = `(${n})`;
+    b.disabled = (c!=="" && n===0);
+  });
+}
+function setFilter(cat){
+  currentFilter = cat;
+  document.querySelectorAll("#filters .filter-btn").forEach(b=>b.classList.toggle("active", b.dataset.cat===cat));
+  refreshDraw();
+}
+document.querySelectorAll("#filters .filter-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{ if(spinning) return; setFilter(btn.dataset.cat); });
+});
+
+function itemHTML(p, cls=""){
+  return `<div class="reel-item ${catClass(p.cat)} ${cls}"><div class="badge">${escapeHTML(catLabel(p.cat))}</div><div class="q">${escapeHTML(p.q)}</div></div>`;
+}
+function buildStrip(items, emptyMsg){
+  const strip=$("#reel-strip");
+  if(!items.length){ strip.innerHTML=`<div class="reel-item"><div class="q" style="color:var(--ink-soft)">${escapeHTML(emptyMsg||"尚無題目，請先到「題目設定」新增")}</div></div>`; strip.style.transform="translateY(114px)"; return; }
+  let html=""; const reps=Math.max(6, Math.ceil(60/items.length));
+  for(let r=0;r<reps;r++) for(const p of items) html+=itemHTML(p);
+  strip.innerHTML=html; strip.style.transform="translateY(0px)";
+}
+
+let spinning=false, rafId=null, pos=0, drawnThisRound=[], finalPos=0, stopTimer=null;
+const ITEM_H=114, VISIBLE=3;
+const CENTER=(ITEM_H*VISIBLE - ITEM_H)/2;   // offset to center an item
+
+function startDraw(){
+  if(spinning) return;
+  if(pool.length===0) resetPool();
+  const items=filteredPool();
+  if(items.length===0){ toast(currentFilter ? `「${currentFilter}」已全部抽完` : "題庫是空的，請先到「題目設定」輸入"); return; }
+  const drawN=Math.min(cfg.count, items.length);
+  drawnThisRound=pickRandom(items, drawN);
+
+  const strip=$("#reel-strip");
+  let html=""; const reps=8;
+  for(let r=0;r<reps;r++) for(const p of items) html+=itemHTML(p);
+  for(const w of drawnThisRound) html+=itemHTML(w,"win-target");
+  strip.innerHTML=html;
+
+  const winnerIndex=reps*items.length;
+  finalPos=winnerIndex*ITEM_H - CENTER;
+
+  spinning=true; pos=0;
+  $("#btn-draw").disabled=true; $("#btn-stop").disabled=false;
+  const reveal=$("#reveal"); reveal.classList.remove("show"); reveal.innerHTML="";
+  lastTickSlot=-1;
+  const spinTime = 2600 + Math.random()*900;
+  startTick();
+  animateTo(finalPos, spinTime);
+  // fallback: if rAF is throttled (e.g. tab in background), still finalize.
+  clearTimeout(stopTimer);
+  stopTimer=setTimeout(finishDraw, spinTime+400);
+}
+function pickRandom(arr,n){ const c=arr.slice(), out=[]; for(let i=0;i<n && c.length;i++){ out.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); } return out; }
+
+let animStart=0, animFrom=0, animTo=0, animDur=0;
+function animateTo(to,dur){ animFrom=pos; animTo=to; animDur=dur; animStart=performance.now(); }
+function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+function startTick(){ if(rafId) return; const tick=(now)=>{ step(now); if(spinning){ rafId=requestAnimationFrame(tick); } else { rafId=null; } }; rafId=requestAnimationFrame(tick); }
+function stopTick(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; } }
+
+let lastTickSlot=-1;
+function step(now){
+  const t=Math.min(1,(now-animStart)/animDur);
+  pos=animFrom+(animTo-animFrom)*easeOutCubic(t);
+  $("#reel-strip").style.transform=`translateY(${-pos}px)`;
+  if(cfg.sound && t<0.9){ const slot=Math.floor(pos/ITEM_H); if(slot!==lastTickSlot){ blip(620,0.03,0.035); lastTickSlot=slot; } }
+  if(t>=1) finishDraw();
+}
+function finishDraw(){
+  if(!spinning) return;                 // run exactly once
+  spinning=false; stopTick(); clearTimeout(stopTimer);
+  $("#reel-strip").style.transform=`translateY(${-finalPos}px)`;   // snap onto winner
+  $("#btn-draw").disabled=false; $("#btn-stop").disabled=true;
+  showDrawn(drawnThisRound);
+  setTimeout(()=>{ const el=$("#reveal"); if(el) el.scrollIntoView({behavior:"smooth", block:"center"}); }, 150);
+  if(cfg.remove){ for(const w of drawnThisRound){ const i=pool.findIndex(p=>p.q===w.q && p.a===w.a); if(i>=0) pool.splice(i,1); } }
+  if(currentFilter && filteredPool().length===0){
+    currentFilter="";
+    document.querySelectorAll("#filters .filter-btn").forEach(b=>b.classList.toggle("active", b.dataset.cat===""));
+    toast("此類別已抽完，已切回「全部」");
+  }
+  updatePoolCount();
+  history.push({ round:history.length+1, time:new Date().toLocaleString("zh-TW"), items:drawnThisRound.map(w=>({q:w.q,a:w.a,cat:w.cat||""})) });
+  saveHist(history);
+  if(cfg.sound) cheer();
+  confetti();
+}
+function showDrawn(list){
+  const box=$("#reveal");
+  box.innerHTML=list.map((p,i)=>`
+    <div class="q-card ${catClass(p.cat)}">
+      <div class="cat-badge">${escapeHTML(catLabel(p.cat))}</div>
+      <div class="lbl">🎯 抽中題目</div>
+      <div class="qtext">${escapeHTML(p.q)}</div>
+      <button class="see-ans" data-i="${i}">👁 看答案</button>
+      <div class="a-box" id="ans-${i}"><div class="albl">答案</div><div class="atext">${escapeHTML(p.a||"（未設定答案）")}</div></div>
+    </div>`).join("");
+  box.classList.add("show");
+  box.querySelectorAll(".see-ans").forEach(btn=>btn.onclick=()=>{
+    const a=$("#ans-"+btn.dataset.i); a.classList.toggle("show");
+    btn.textContent=a.classList.contains("show")?"🙈 隱藏答案":"👁 看答案";
+  });
+}
+
+$("#btn-draw").addEventListener("click",()=>{ initAudio(); startDraw(); });
+$("#btn-stop").addEventListener("click",()=>{
+  if(!spinning) return;
+  const remain=500; animDur=remain; animFrom=pos; animStart=performance.now();
+});
+
+/* ---------------- History ---------------- */
+function renderHistory(){
+  const box=$("#history-list");
+  if(!history.length){ box.innerHTML=`<div class="empty">尚無抽題紀錄</div>`; return; }
+  box.innerHTML=history.slice().reverse().map(r=>`
+    <div class="round-card">
+      <h3>第 ${r.round} 輪</h3>
+      <div class="time">${r.time}</div>
+      ${r.items.map(it=>`<div class="qa-row"><div class="q">${it.cat?`<span class="hist-tag ${catClass(it.cat)}">${escapeHTML(it.cat)}</span>`:""}Q：${escapeHTML(it.q)}</div><div class="a">A：${escapeHTML(it.a||"（未設定答案）")}</div></div>`).join("")}
+    </div>`).join("");
+}
+$("#btn-clear-hist").onclick=()=>{ if(confirm("確定清除所有抽題紀錄？此動作無法復原。")){ history=[]; saveHist(history); resetPool(); renderHistory(); updatePoolCount(); toast("已清除抽題紀錄"); } };
+$("#btn-export").onclick=()=>{
+  if(!history.length){ toast("沒有紀錄可匯出"); return; }
+  let csv="﻿輪次,時間,類別,題目,答案\n";
+  for(const r of history) for(const it of r.items) csv+=`${r.round},"${r.time}","${it.cat||""}","${(it.q||"").replace(/"/g,'""')}","${(it.a||"").replace(/"/g,'""')}"\n`;
+  const blob=new Blob([csv],{type:"text/csv"}); const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="TMLA抽題紀錄.csv"; a.click(); URL.revokeObjectURL(a.href);
+};
+
+/* ---------------- Fullscreen ---------------- */
+$("#btn-fs").onclick=()=>{
+  const el=$("#machine-wrap");
+  if(!document.fullscreenElement){ el.requestFullscreen&&el.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); }
+};
+
+/* ---------------- Audio ---------------- */
+let actx=null;
+function initAudio(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==="suspended") actx.resume(); }
+function blip(freq,dur,vol){ if(!actx||!cfg.sound) return; const o=actx.createOscillator(),g=actx.createGain(); o.type="triangle"; o.frequency.value=freq; o.connect(g); g.connect(actx.destination); const t=actx.currentTime; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur); }
+
+/* big joyful cheer — fanfare + crowd cheer + applause + whistles, ~1.7s */
+function cheer(){
+  if(!actx||!cfg.sound) return;
+  const t0=actx.currentTime;
+  // master compressor so it can be loud without harsh clipping
+  const master=actx.createDynamicsCompressor();
+  master.threshold.value=-16; master.knee.value=24; master.ratio.value=4;
+  master.attack.value=0.003; master.release.value=0.25; master.connect(actx.destination);
+
+  // bright ascending fanfare arpeggio
+  const notes=[523.25,659.25,783.99,1046.50,1318.51];
+  notes.forEach((f,i)=>{
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type="triangle"; o.frequency.value=f;
+    const on=t0+i*0.065;
+    g.gain.setValueAtTime(0.0001,on);
+    g.gain.exponentialRampToValueAtTime(0.22,on+0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+1.6);
+    o.connect(g); g.connect(master); o.start(on); o.stop(t0+1.65);
+  });
+  // held major triad for body
+  [523.25,659.25,783.99].forEach(f=>{
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type="sawtooth"; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t0+0.32);
+    g.gain.linearRampToValueAtTime(0.05,t0+0.5);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+1.7);
+    o.connect(g); g.connect(master); o.start(t0+0.32); o.stop(t0+1.72);
+  });
+  // crowd-cheer swell (loud, long)
+  const dur=1.7, buf=actx.createBuffer(1, Math.floor(actx.sampleRate*dur), actx.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const src=actx.createBufferSource(); src.buffer=buf;
+  const bp=actx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=1500; bp.Q.value=0.5;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.linearRampToValueAtTime(0.34,t0+0.28);
+  g.gain.linearRampToValueAtTime(0.26,t0+1.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  src.connect(bp); bp.connect(g); g.connect(master); src.start(t0); src.stop(t0+dur);
+  // applause — rapid short high-passed noise bursts (clapping)
+  for(let k=0;k<18;k++){
+    const at=t0+0.1+Math.random()*1.35;
+    const cb=actx.createBuffer(1, Math.floor(actx.sampleRate*0.05), actx.sampleRate);
+    const cd=cb.getChannelData(0); for(let i=0;i<cd.length;i++) cd[i]=(Math.random()*2-1)*(1-i/cd.length);
+    const cs=actx.createBufferSource(); cs.buffer=cb;
+    const hp=actx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=2200;
+    const cg=actx.createGain(); cg.gain.value=0.09;
+    cs.connect(hp); hp.connect(cg); cg.connect(master); cs.start(at); cs.stop(at+0.05);
+  }
+  // excited whistle chirps
+  [[0.18,1600,2200],[0.6,1500,2100],[1.05,1750,2350]].forEach(([at,f1,f2])=>{
+    const o=actx.createOscillator(), gg=actx.createGain(); o.type="sine";
+    o.frequency.setValueAtTime(f1,t0+at); o.frequency.linearRampToValueAtTime(f2,t0+at+0.2);
+    gg.gain.setValueAtTime(0.0001,t0+at); gg.gain.exponentialRampToValueAtTime(0.13,t0+at+0.04); gg.gain.exponentialRampToValueAtTime(0.0001,t0+at+0.26);
+    o.connect(gg); gg.connect(master); o.start(t0+at); o.stop(t0+at+0.3);
+  });
+}
+
+/* ---------------- Confetti ---------------- */
+function confetti(){
+  const cv=$("#confetti"), ctx=cv.getContext("2d"); cv.width=innerWidth; cv.height=innerHeight;
+  const colors=["#3a8f83","#c3e2d5","#d8a24c","#2b6b62","#8fc4b6"];
+  const parts=Array.from({length:130},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*0.4,r:5+Math.random()*7,c:colors[Math.floor(Math.random()*colors.length)],vy:2+Math.random()*4,vx:-2+Math.random()*4,rot:Math.random()*6,vr:-.2+Math.random()*.4}));
+  let frames=0;
+  (function draw(){ ctx.clearRect(0,0,cv.width,cv.height); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6); ctx.restore(); }); frames++; if(frames<160) requestAnimationFrame(draw); else ctx.clearRect(0,0,cv.width,cv.height); })();
+}
+
+/* ---------------- Init ---------------- */
+fillForm();
+resetPool();
+refreshDraw();
+</script>
+</body>
+</html>
