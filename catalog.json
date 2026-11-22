@@ -6,9 +6,206 @@
       "title": "Emily 的工作管理系統",
       "desc": "工作、任務、推廣三套管理系統",
       "type": "tools",
-      "tags": ["內部", "使用中"],
+      "tags": [
+        "內部",
+        "使用中"
+      ],
       "date": "2026-10",
       "url": "https://emilychen1212.github.io/emily-work-system/"
+    },
+    {
+      "id": "training-system",
+      "title": "飛資得講習站",
+      "desc": "問卷、課堂投影、抽獎一站完成",
+      "type": "tools",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-10",
+      "url": "https://emilychen1212.github.io/training-system/"
+    },
+    {
+      "id": "training-decks",
+      "title": "講習站簡報總表",
+      "desc": "教育訓練與分享簡報集",
+      "type": "guides",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-10",
+      "url": "https://emilychen1212.github.io/training-system/decks/"
+    },
+    {
+      "id": "jove-challenge-2026",
+      "title": "JoVE 挑戰 2026",
+      "desc": "JoVE 挑戰活動網站",
+      "type": "campaigns",
+      "tags": [
+        "JoVE",
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "https://emilychen1212.github.io/flysheet-2026JOVE/"
+    },
+    {
+      "id": "booth-raffle",
+      "title": "擺攤抽獎系統",
+      "desc": "擺攤活動的線上抽獎",
+      "type": "tools",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "https://emilychen1212.github.io/flysheet-event-draw/"
+    },
+    {
+      "id": "mmu-healthlibrary",
+      "title": "Health Library 雲端挖寶樂",
+      "desc": "馬偕圖書館有獎徵答與配對遊戲",
+      "type": "campaigns",
+      "tags": [
+        "LWW",
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "https://emilychen1212.github.io/2026mmu-healthlibrary/"
+    },
+    {
+      "id": "ebook-index-generator",
+      "title": "電子書目錄頁生成器",
+      "desc": "大綱轉成電子書目錄頁",
+      "type": "tools",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-10",
+      "url": "https://emilychen1212.github.io/ebook-index-generator/"
+    },
+    {
+      "id": "speaking-lab",
+      "title": "跟讀練習室",
+      "desc": "英文跟讀與口說練習",
+      "type": "lab",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "https://emilychen1212.github.io/speaking-lab/"
+    },
+    {
+      "id": "pdf-filler",
+      "title": "PDF 快填工具",
+      "desc": "用按鈕在 PDF 上蓋字、打勾",
+      "type": "tools",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-11",
+      "url": "tools/2026-11-pdf-filler/"
+    },
+    {
+      "id": "tmla-bingo",
+      "title": "TMLA 賓果遊戲",
+      "desc": "賓果遊戲的知識題目抽選",
+      "type": "campaigns",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "campaigns/2026-08-tmla-bingo/"
+    },
+    {
+      "id": "physio-sitemap",
+      "title": "生理所網站地圖",
+      "desc": "生理所網站頁面架構總覽",
+      "type": "data",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "data/2026-08-physio-sitemap/"
+    },
+    {
+      "id": "physio-meeting-framework",
+      "title": "生理所會議思考框架",
+      "desc": "網站會議的思考框架",
+      "type": "data",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "data/2026-08-physio-meeting-framework/"
+    },
+    {
+      "id": "ntu-child-alignment",
+      "title": "兒醫平台對齊思考脈絡",
+      "desc": "兒醫平台合作的對齊脈絡",
+      "type": "data",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "data/2026-08-ntu-child-alignment/"
+    },
+    {
+      "id": "teaching-survey-spec",
+      "title": "教學意見調查系統規格",
+      "desc": "調查系統採購與上線規格",
+      "type": "data",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-10",
+      "url": "data/2026-10-teaching-survey-spec/"
+    },
+    {
+      "id": "hospital-app-prototype",
+      "title": "醫院行動 App 雛形",
+      "desc": "App 畫面與無障礙互動原型",
+      "type": "lab",
+      "tags": [
+        "客戶",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "lab/2026-08-hospital-app-prototype/"
+    },
+    {
+      "id": "order-timeline",
+      "title": "訂單時間軸原型",
+      "desc": "訂單各階段進度時間軸",
+      "type": "lab",
+      "tags": [
+        "內部",
+        "使用中"
+      ],
+      "date": "2026-08",
+      "url": "lab/2026-08-order-timeline/"
+    },
+    {
+      "id": "ai-assistant",
+      "title": "AI 工作助理",
+      "desc": "串 Notion 的工作助理",
+      "type": "lab",
+      "tags": [
+        "內部",
+        "已封存"
+      ],
+      "date": "2026-03",
+      "url": "lab/2026-03-ai-assistant/"
     }
   ]
 }
